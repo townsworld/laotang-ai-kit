@@ -1,0 +1,6 @@
+# Demos 目录
+
+每个 Demo 的页面存放在这里，使用动态路由。
+
+例如：`app/demos/[demoId]/page.tsx`
+

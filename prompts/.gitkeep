@@ -1,0 +1,10 @@
+# Prompts 目录
+
+这里存放每一期视频对应的 AI 提示词。
+
+## 命名规范
+
+- `01-cyber-profile.md` - 赛博朋克个人主页
+- `02-scumbag-quotes.md` - 渣男语录生成器
+- ...
+
