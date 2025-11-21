@@ -1,7 +1,7 @@
 {
-  "name": "tang-ai-weapon",
+  "name": "laotang-ai-kit",
   "version": "0.1.0",
-  "description": "老唐的 AI 军火库 - The Arsenal of an AI-Native Hacker",
+  "description": "老唐的 AI 装备库 - Laotang AI Kit",
   "private": true,
   "scripts": {
     "dev": "next dev",

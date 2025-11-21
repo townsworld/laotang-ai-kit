@@ -1,4 +1,4 @@
-# ⚡️ 老唐的 AI 军火库 (Tang AI Weapon)
+# ⚡️ 老唐的 AI 装备库 (Laotang AI Kit)
 
 > **能让 AI 干的活，我绝不自己干。**
 

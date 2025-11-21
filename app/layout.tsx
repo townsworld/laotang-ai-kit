@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "老唐的 AI 军火库 | Tang AI Weapon",
-  description: "能让 AI 干的活，我绝不自己干。The Arsenal of an AI-Native Hacker",
+  title: "老唐的 AI 装备库 | Laotang AI Kit",
+  description: "能让 AI 干的活，我绝不自己干。Laotang AI Kit - The Arsenal of an AI-Native Hacker",
 };
 
 export default function RootLayout({

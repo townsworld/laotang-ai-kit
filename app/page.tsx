@@ -4,12 +4,12 @@ import Link from "next/link";
 // Mock 数据：未来的 Demo 列表
 const demos = [
   {
-    id: "cyber-profile",
+    id: "01-cyber-profile",
     title: "赛博朋克个人主页",
     description: "一个充满赛博朋克风格的酷炫个人主页",
     episode: "Ep.01",
-    status: "coming-soon",
-    tags: ["Next.js", "Three.js", "Cyberpunk"],
+    status: "live",
+    tags: ["Next.js", "Tailwind CSS", "Cyberpunk"],
   },
   {
     id: "scumbag-quotes",
@@ -51,11 +51,11 @@ export default function Home() {
             <div className="space-y-4">
               <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
                 <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
-                  老唐的 AI 军火库
+                  老唐的 AI 装备库
                 </span>
               </h1>
               <p className="text-xl md:text-2xl text-slate-400 font-mono">
-                The Arsenal of an AI-Native Hacker
+                Laotang AI Kit
               </p>
             </div>
 
@@ -111,13 +111,19 @@ export default function Home() {
                         {demo.episode}
                       </span>
                     </div>
-                    {demo.status === "coming-soon" && (
+                    {demo.status === "coming-soon" ? (
                       <div className="px-3 py-1 rounded-md bg-purple-500/10 border border-purple-500/30">
                         <span className="text-xs font-mono text-purple-400">
                           Coming Soon
                         </span>
                       </div>
-                    )}
+                    ) : demo.status === "live" ? (
+                      <div className="px-3 py-1 rounded-md bg-green-500/10 border border-green-500/30">
+                        <span className="text-xs font-mono text-green-400">
+                          ● Live
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
 
                   {/* Content */}
@@ -151,6 +157,14 @@ export default function Home() {
                       </span>
                       {demo.status === "coming-soon" ? (
                         <span className="text-slate-600 font-mono">敬请期待</span>
+                      ) : demo.status === "live" ? (
+                        <Link
+                          href={`/demos/${demo.id}`}
+                          className="text-cyan-400 hover:text-cyan-300 font-mono transition-colors flex items-center gap-1 group"
+                        >
+                          <span>查看演示</span>
+                          <span className="group-hover:translate-x-1 transition-transform">→</span>
+                        </Link>
                       ) : (
                         <Link
                           href={`/demos/${demo.id}`}
@@ -177,7 +191,7 @@ export default function Home() {
               </div>
               <div className="flex items-center gap-6 text-sm text-slate-500">
                 <a
-                  href="https://github.com/your-username/tang-ai-weapon"
+                  href="https://github.com/townsworld/laotang-ai-kit"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-cyan-400 transition-colors"
