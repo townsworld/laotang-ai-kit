@@ -63,7 +63,7 @@ export default function Home() {
             <div className="flex items-center gap-2 px-6 py-3 rounded-full bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm">
               <Terminal className="w-4 h-4 text-cyan-400" />
               <p className="text-slate-300 font-medium">
-                能让 AI 干的活，我绝不自己干
+                致力于用 AI 提早两小时下班
               </p>
             </div>
 

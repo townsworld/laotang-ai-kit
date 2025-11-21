@@ -87,7 +87,7 @@ export default function CyberProfilePage() {
               {/* Description */}
               <div className="bg-slate-800/50 rounded-lg p-6 mb-6 border border-cyan-500/20">
                 <p className="text-slate-300 text-center leading-relaxed">
-                  <span className="text-cyan-400 font-bold">"能让 AI 干的活，我绝不自己干。"</span>
+                  <span className="text-cyan-400 font-bold">{'"'}致力于用 AI 提早两小时下班{'"'}</span>
                   <br />
                   <span className="text-sm text-slate-400 mt-2 block">
                     正在构建老唐的 AI 装备库...
