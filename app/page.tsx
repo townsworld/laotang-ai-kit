@@ -71,7 +71,7 @@ export default function Home() {
             <div className="flex gap-8 pt-4">
               <div className="text-center">
                 <div className="text-3xl font-bold text-cyan-400">{demos.length}</div>
-                <div className="text-sm text-slate-500">武器</div>
+                <div className="text-sm text-slate-500">装备</div>
               </div>
               <div className="w-px bg-slate-700" />
               <div className="text-center">
@@ -91,7 +91,7 @@ export default function Home() {
         <section className="container mx-auto px-4 py-12">
           <div className="flex items-center gap-3 mb-8">
             <Code2 className="w-6 h-6 text-cyan-400" />
-            <h2 className="text-3xl font-bold text-slate-200">武器库</h2>
+            <h2 className="text-3xl font-bold text-slate-200">装备库</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

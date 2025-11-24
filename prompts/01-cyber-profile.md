@@ -27,10 +27,10 @@
 - **Avatar:** 使用一个圆形的占位图，带有旋转的边框光环。
 - **Name:** 程序员老唐 (AI版)
 - **Title:** AI Efficiency Hacker | 职场反内卷专家
-- **Description:** "致力于用 AI 提早两小时下班。正在构建老唐的 AI 军火库..."
+- **Description:** "致力于用 AI 提早两小时下班。正在构建老唐的 AI 装备库..."
 - **Action Buttons:**
     1.  Primary: "Get My Prompts" (高亮，带有 hover 发光动画)
-    2.  Secondary: "Back to Arsenal" (返回首页)
+    2.  Secondary: "返回装备库" (返回首页)
 
 # Technical Implementation
 

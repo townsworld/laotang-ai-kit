@@ -24,7 +24,7 @@ export default function CyberProfilePage() {
             className="inline-flex items-center gap-2 mb-8 text-cyan-400 hover:text-cyan-300 transition-colors group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span className="font-mono text-sm">Back to Arsenal</span>
+            <span className="font-mono text-sm">返回装备库</span>
           </Link>
 
           {/* Main Card */}
@@ -99,7 +99,7 @@ export default function CyberProfilePage() {
               <div className="mb-8">
                 <div className="flex items-center gap-2 mb-4">
                   <Code2 className="w-4 h-4 text-cyan-400" />
-                  <span className="text-sm font-mono text-slate-400">Tech Arsenal</span>
+                  <span className="text-sm font-mono text-slate-400">技术栈</span>
                 </div>
                 <div className="flex flex-wrap gap-2 justify-center">
                   {[
@@ -169,7 +169,7 @@ export default function CyberProfilePage() {
                   className="w-full sm:w-auto px-8 py-4 rounded-lg bg-slate-800/50 border border-slate-700 hover:border-purple-500/50 text-slate-300 hover:text-purple-300 font-mono transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20 flex items-center justify-center gap-2"
                 >
                   <ArrowLeft className="w-5 h-5" />
-                  <span>Back to Arsenal</span>
+                  <span>返回装备库</span>
                 </Link>
               </div>
 

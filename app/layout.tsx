@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "老唐的 AI 装备库 | Laotang AI Kit",
-  description: "致力于用 AI 提早两小时下班。Laotang AI Kit - The Arsenal of an AI-Native Hacker",
+  description: "致力于用 AI 提早两小时下班。Laotang AI Kit - AI 效率提升工具集",
 };
 
 export default function RootLayout({
