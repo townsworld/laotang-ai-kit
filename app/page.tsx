@@ -1,5 +1,8 @@
+"use client";
+
 import { Code2, Zap, Terminal, Sparkles } from "lucide-react";
 import Link from "next/link";
+import SettingsMenu from "@/components/SettingsMenu";
 
 // Mock 数据：未来的 Demo 列表
 const demos = [
@@ -10,6 +13,7 @@ const demos = [
     episode: "Ep.01",
     status: "live",
     tags: ["Next.js", "Tailwind CSS", "Cyberpunk"],
+    needsApiKey: false,
   },
   {
     id: "cybermuyu-2077",
@@ -18,6 +22,7 @@ const demos = [
     episode: "Ep.02",
     status: "live",
     tags: ["React", "Framer Motion", "Web Audio"],
+    needsApiKey: false,
   },
   {
     id: "truth-translator",
@@ -26,6 +31,7 @@ const demos = [
     episode: "Ep.03",
     status: "live",
     tags: ["AI", "Gemini", "职场"],
+    needsApiKey: true,
   },
   {
     id: "scumbag-quotes",
@@ -34,6 +40,7 @@ const demos = [
     episode: "Ep.04",
     status: "coming-soon",
     tags: ["AI", "OpenAI", "娱乐"],
+    needsApiKey: true,
   },
   {
     id: "placeholder-5",
@@ -42,6 +49,7 @@ const demos = [
     episode: "Ep.05",
     status: "coming-soon",
     tags: ["AI", "Web", "Magic"],
+    needsApiKey: false,
   },
 ];
 
@@ -51,6 +59,9 @@ export default function Home() {
       {/* 背景装饰 */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#4f4f4f2e_1px,transparent_1px),linear-gradient(to_bottom,#4f4f4f2e_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
       
+      {/* 右上角设置菜单 */}
+      <SettingsMenu />
+
       <div className="relative">
         {/* Hero Section */}
         <section className="container mx-auto px-4 pt-20 pb-12 md:pt-32 md:pb-20">
@@ -111,7 +122,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {demos.map((demo, index) => (
+            {demos.map((demo) => (
               <div
                 key={demo.id}
                 className="group relative bg-slate-900/50 backdrop-blur-sm rounded-xl border border-slate-800 hover:border-cyan-500/50 transition-all duration-300 overflow-hidden"
@@ -127,19 +138,26 @@ export default function Home() {
                         {demo.episode}
                       </span>
                     </div>
-                    {demo.status === "coming-soon" ? (
-                      <div className="px-3 py-1 rounded-md bg-purple-500/10 border border-purple-500/30">
-                        <span className="text-xs font-mono text-purple-400">
-                          Coming Soon
-                        </span>
-                      </div>
-                    ) : demo.status === "live" ? (
-                      <div className="px-3 py-1 rounded-md bg-green-500/10 border border-green-500/30">
-                        <span className="text-xs font-mono text-green-400">
-                          ● Live
-                        </span>
-                      </div>
-                    ) : null}
+                    <div className="flex items-center gap-2">
+                      {demo.needsApiKey && (
+                        <div className="px-2 py-1 rounded-md bg-amber-500/10 border border-amber-500/30" title="需要 API Key">
+                          <span className="text-xs font-mono text-amber-400">🔑</span>
+                        </div>
+                      )}
+                      {demo.status === "coming-soon" ? (
+                        <div className="px-3 py-1 rounded-md bg-purple-500/10 border border-purple-500/30">
+                          <span className="text-xs font-mono text-purple-400">
+                            Coming Soon
+                          </span>
+                        </div>
+                      ) : demo.status === "live" ? (
+                        <div className="px-3 py-1 rounded-md bg-green-500/10 border border-green-500/30">
+                          <span className="text-xs font-mono text-green-400">
+                            ● Live
+                          </span>
+                        </div>
+                      ) : null}
+                    </div>
                   </div>
 
                   {/* Content */}
@@ -175,7 +193,7 @@ export default function Home() {
                         <span className="text-slate-600 font-mono">敬请期待</span>
                       ) : demo.status === "live" ? (
                         <Link
-                          href={`/demos/${demo.id}`}
+                          href={`/kits/${demo.id}`}
                           className="text-cyan-400 hover:text-cyan-300 font-mono transition-colors flex items-center gap-1 group"
                         >
                           <span>查看演示</span>
@@ -183,7 +201,7 @@ export default function Home() {
                         </Link>
                       ) : (
                         <Link
-                          href={`/demos/${demo.id}`}
+                          href={`/kits/${demo.id}`}
                           className="text-cyan-400 hover:text-cyan-300 font-mono transition-colors"
                         >
                           查看 →
@@ -203,11 +221,11 @@ export default function Home() {
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2 text-slate-400">
                 <Code2 className="w-5 h-5" />
-                <span className="font-mono">Made by 程序员老唐 (AI版)</span>
+                <span className="font-mono">Made by 程序员老唐AI</span>
               </div>
               <div className="flex items-center gap-6 text-sm text-slate-500">
                 <a
-                  href="https://github.com/townsworld/laotang-ai-kit"
+                  href="https://github.com/townsworld"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-cyan-400 transition-colors"
@@ -215,7 +233,7 @@ export default function Home() {
                   GitHub
                 </a>
                 <a
-                  href="https://xiaohongshu.com"
+                  href="https://xhslink.com/m/8DTfNeEEiba"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-cyan-400 transition-colors"
@@ -230,4 +248,3 @@ export default function Home() {
     </main>
   );
 }
-

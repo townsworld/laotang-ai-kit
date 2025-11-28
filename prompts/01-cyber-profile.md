@@ -25,7 +25,7 @@
 # Content Requirements
 
 - **Avatar:** 使用一个圆形的占位图，带有旋转的边框光环。
-- **Name:** 程序员老唐 (AI版)
+- **Name:** 程序员老唐AI
 - **Title:** AI Efficiency Hacker | 职场反内卷专家
 - **Description:** "致力于用 AI 提早两小时下班。正在构建老唐的 AI 装备库..."
 - **Action Buttons:**
@@ -79,5 +79,5 @@
 
 ---
 
-**Made by 程序员老唐 (AI版)** | 小红书 @程序员老唐(AI版)
+**Made by 程序员老唐AI** | 小红书 @程序员老唐AI
 

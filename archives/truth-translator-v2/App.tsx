@@ -1,18 +1,43 @@
-"use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { translateText } from './services/geminiService';
-import { TranslationResult, TranslationMode } from './types';
+import { TranslationResult, TranslationMode, HistoryItem } from './types';
 import TranslationCard from './components/TranslationCard';
-import { Sparkles, ArrowRight, AlertCircle, AlertTriangle } from 'lucide-react';
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import ShareModal from './components/ShareModal';
+import HistorySidebar from './components/HistorySidebar';
+import { Sparkles, ArrowRight, AlertCircle, AlertTriangle, History } from 'lucide-react';
 
-export default function TruthTranslatorPage() {
+const App: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [result, setResult] = useState<TranslationResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // State for Share Modal
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [shareData, setShareData] = useState<{mode: TranslationMode, content: string} | null>(null);
+
+  // State for History
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
+  // Load history from local storage on mount
+  useEffect(() => {
+    try {
+      const savedHistory = localStorage.getItem('truth_translator_history');
+      if (savedHistory) {
+        setHistory(JSON.parse(savedHistory));
+      }
+    } catch (e) {
+      console.error("Failed to load history", e);
+    }
+  }, []);
+
+  // Save history helper
+  const saveHistory = (newHistory: HistoryItem[]) => {
+    setHistory(newHistory);
+    localStorage.setItem('truth_translator_history', JSON.stringify(newHistory));
+  };
 
   const handleTranslate = async () => {
     if (!inputText.trim()) return;
@@ -24,6 +49,18 @@ export default function TruthTranslatorPage() {
     try {
       const data = await translateText(inputText);
       setResult(data);
+
+      // Add to history
+      const newHistoryItem: HistoryItem = {
+        id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
+        timestamp: Date.now(),
+        inputText: inputText,
+        result: data
+      };
+      
+      const updatedHistory = [newHistoryItem, ...history].slice(0, 50); // Limit to 50 items
+      saveHistory(updatedHistory);
+
     } catch (err) {
       setError("分析失败，请稍后再试。(Analysis failed)");
       console.error(err);
@@ -38,23 +75,41 @@ export default function TruthTranslatorPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-gray-50 to-zinc-100 text-slate-800 font-sans selection:bg-indigo-100">
-      {/* 返回按钮 */}
-      <div className="absolute top-6 left-6 z-30">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-indigo-200 rounded-lg text-indigo-600 hover:text-indigo-700 hover:border-indigo-400 transition-all shadow-sm hover:shadow-md group"
-        >
-          <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-          <span className="font-medium text-sm">返回装备库</span>
-        </Link>
-      </div>
+  const handleShare = (mode: TranslationMode, content: string) => {
+    setShareData({ mode, content });
+    setIsShareModalOpen(true);
+  };
 
-      <div className="max-w-5xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
+  const handleHistorySelect = (item: HistoryItem) => {
+    setInputText(item.inputText);
+    setResult(item.result);
+    setIsHistoryOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleClearHistory = () => {
+    if (confirm('确定要清空所有历史记录吗？')) {
+      saveHistory([]);
+    }
+  };
+
+  return (
+    <div className="min-h-screen text-slate-800 font-sans selection:bg-indigo-100">
+      <div className="max-w-5xl mx-auto px-4 py-12 sm:px-6 lg:px-8 relative">
         
+        {/* Header Actions */}
+        <div className="absolute top-6 right-6 sm:top-8 sm:right-8 z-20">
+          <button
+            onClick={() => setIsHistoryOpen(true)}
+            className="p-3 bg-white/80 backdrop-blur-sm rounded-full shadow-sm border border-slate-200 text-slate-600 hover:text-indigo-600 hover:shadow-md hover:scale-105 transition-all"
+            title="历史记录"
+          >
+            <History className="w-5 h-5" />
+          </button>
+        </div>
+
         {/* Header */}
-        <div className="text-center mb-12 animate-fade-in">
+        <div className="text-center mb-12 animate-fade-in pt-8">
           <div className="flex justify-center mb-4">
             <div className="p-3 bg-indigo-600 rounded-2xl shadow-lg shadow-indigo-200">
               <Sparkles className="w-8 h-8 text-white" />
@@ -72,7 +127,7 @@ export default function TruthTranslatorPage() {
         </div>
 
         {/* Input Section */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 p-6 sm:p-8 mb-10 border border-slate-100 animate-slide-up">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl shadow-slate-200/50 p-6 sm:p-8 mb-10 border border-slate-100 animate-slide-up relative z-10">
           <div className="relative">
             <label htmlFor="input" className="block text-sm font-semibold text-slate-700 mb-2">
               你的心里话 (Inner Truth)
@@ -80,7 +135,7 @@ export default function TruthTranslatorPage() {
             <div className="relative">
                <textarea
                 id="input"
-                className="w-full h-40 p-4 bg-slate-50 rounded-xl border border-slate-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 transition-all resize-none text-lg text-slate-800 placeholder-slate-400 focus:outline-none"
+                className="w-full h-40 p-4 bg-slate-50 rounded-xl border border-slate-200 transition-all duration-300 ease-in-out resize-none text-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white focus:shadow-[0_0_25px_rgba(99,102,241,0.2)]"
                 placeholder="例如：这破会开得没完没了，老子想回家... (Example: This meeting is useless...)"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
@@ -130,9 +185,9 @@ export default function TruthTranslatorPage() {
 
         {/* Results Section */}
         {result && (
-          <div className="space-y-8 animate-fade-in">
-            {/* Analysis Banner - Updated to Yellow/Warning Style */}
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg shadow-sm flex items-start">
+          <div className="space-y-8 animate-fade-in relative z-10">
+            {/* Analysis Banner - Yellow/Warning Style */}
+            <div className="bg-yellow-50/90 backdrop-blur-sm border-l-4 border-yellow-400 p-4 rounded-r-lg shadow-sm flex items-start">
               <AlertTriangle className="w-6 h-6 text-yellow-500 mr-3 flex-shrink-0 mt-0.5" />
               <div>
                 <h4 className="font-bold text-yellow-800 text-sm tracking-wide mb-1">当前情绪诊断</h4>
@@ -146,22 +201,42 @@ export default function TruthTranslatorPage() {
                 mode={TranslationMode.PROFESSIONAL} 
                 content={result.translations.professional} 
                 delay={100}
+                onShare={handleShare}
               />
               <TranslationCard 
                 mode={TranslationMode.HIGH_EQ} 
                 content={result.translations.high_eq} 
                 delay={200}
+                onShare={handleShare}
               />
               <TranslationCard 
                 mode={TranslationMode.SARCASTIC} 
                 content={result.translations.sarcastic} 
                 delay={300}
+                onShare={handleShare}
               />
             </div>
           </div>
         )}
       </div>
+      
+      {/* Share Modal */}
+      <ShareModal 
+        isOpen={isShareModalOpen} 
+        onClose={() => setIsShareModalOpen(false)} 
+        data={shareData} 
+      />
+
+      {/* History Sidebar */}
+      <HistorySidebar 
+        isOpen={isHistoryOpen} 
+        onClose={() => setIsHistoryOpen(false)} 
+        history={history}
+        onSelect={handleHistorySelect}
+        onClear={handleClearHistory}
+      />
     </div>
   );
-}
+};
 
+export default App;

@@ -1,3 +1,4 @@
+
 export interface TranslationResult {
   analysis: string;
   translations: {
@@ -17,4 +18,11 @@ export interface TranslationCardProps {
   mode: TranslationMode;
   content: string;
   delay: number;
+}
+
+export interface HistoryItem {
+  id: string;
+  timestamp: number;
+  inputText: string;
+  result: TranslationResult;
 }
