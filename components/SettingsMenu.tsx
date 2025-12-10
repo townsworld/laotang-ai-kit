@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Settings, Key, X, Github, ExternalLink } from 'lucide-react';
+import { Settings, Key, X } from 'lucide-react';
 import { getStoredApiKey, setStoredApiKey, hasApiKey } from '@/lib/apiKey';
 import ApiKeyModal from './ApiKeyModal';
 
@@ -43,10 +43,10 @@ const SettingsMenu: React.FC = () => {
         <button
           onClick={() => setIsOpen(!isOpen)}
           className={`
-            p-3 rounded-xl border backdrop-blur-md transition-all duration-300 shadow-lg
+            p-3 rounded-full border backdrop-blur-sm transition-all duration-300 shadow-sm
             ${isOpen 
-              ? 'bg-slate-800 border-cyan-500/50 text-cyan-400 rotate-90' 
-              : 'bg-slate-900/80 border-slate-700 text-slate-400 hover:text-cyan-400 hover:border-cyan-500/30'
+              ? 'bg-white border-stone-300 text-stone-700 rotate-90 shadow-md' 
+              : 'bg-white/80 border-stone-200 text-stone-500 hover:text-stone-700 hover:border-stone-300 hover:shadow-md'
             }
           `}
           title="设置"
@@ -57,9 +57,9 @@ const SettingsMenu: React.FC = () => {
         {/* 下拉菜单 */}
         <div 
           className={`
-            absolute top-full right-0 mt-2 w-64 
-            bg-slate-900/95 backdrop-blur-md border border-slate-700/50 rounded-xl 
-            shadow-2xl shadow-black/50 overflow-hidden
+            absolute top-full right-0 mt-3 w-72 
+            bg-white/95 backdrop-blur-md border border-stone-200 rounded-2xl 
+            shadow-xl shadow-stone-200/50 overflow-hidden
             transition-all duration-300 origin-top-right
             ${isOpen 
               ? 'opacity-100 scale-100 translate-y-0' 
@@ -68,88 +68,43 @@ const SettingsMenu: React.FC = () => {
           `}
         >
           {/* 菜单头部 */}
-          <div className="px-4 py-3 border-b border-slate-700/50 flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-300">设置</span>
+          <div className="px-5 py-4 border-b border-stone-100 flex items-center justify-between">
+            <span className="text-sm font-medium text-stone-700">设置</span>
             <button 
               onClick={() => setIsOpen(false)}
-              className="p-1 text-slate-500 hover:text-slate-300 transition-colors"
+              className="p-1.5 rounded-full text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-all"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* 菜单项 */}
-          <div className="p-2">
+          <div className="p-3">
             {/* API Key 设置 */}
             <button
               onClick={() => {
                 setIsApiKeyModalOpen(true);
                 setIsOpen(false);
               }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left hover:bg-slate-800/50 transition-colors group"
+              className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left hover:bg-stone-50 transition-colors group"
             >
-              <div className={`p-2 rounded-lg ${apiKeySet ? 'bg-green-500/10' : 'bg-amber-500/10'}`}>
-                <Key className={`w-4 h-4 ${apiKeySet ? 'text-green-400' : 'text-amber-400'}`} />
+              <div className={`p-2.5 rounded-xl ${apiKeySet ? 'bg-emerald-50' : 'bg-amber-50'}`}>
+                <Key className={`w-4 h-4 ${apiKeySet ? 'text-emerald-500' : 'text-amber-500'}`} />
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-slate-200 group-hover:text-white">
+                <div className="text-sm font-medium text-stone-700 group-hover:text-stone-900">
                   Gemini API Key
                 </div>
-                <div className={`text-xs ${apiKeySet ? 'text-green-400' : 'text-amber-400'}`}>
+                <div className={`text-xs ${apiKeySet ? 'text-emerald-500' : 'text-amber-500'}`}>
                   {apiKeySet ? '✓ 已配置' : '未配置'}
                 </div>
               </div>
             </button>
-
-            {/* 分隔线 */}
-            <div className="my-2 border-t border-slate-700/50" />
-
-            {/* GitHub 链接 */}
-            <a
-              href="https://github.com/townsworld"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left hover:bg-slate-800/50 transition-colors group"
-            >
-              <div className="p-2 rounded-lg bg-slate-800">
-                <Github className="w-4 h-4 text-slate-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-slate-200 group-hover:text-white flex items-center gap-1">
-                  GitHub
-                  <ExternalLink className="w-3 h-3 text-slate-500" />
-                </div>
-                <div className="text-xs text-slate-500">
-                  查看源码
-                </div>
-              </div>
-            </a>
-
-            {/* 小红书链接 */}
-            <a
-              href="https://xhslink.com/m/8DTfNeEEiba"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left hover:bg-slate-800/50 transition-colors group"
-            >
-              <div className="p-2 rounded-lg bg-red-500/10">
-                <span className="text-sm">📕</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-slate-200 group-hover:text-white flex items-center gap-1">
-                  小红书
-                  <ExternalLink className="w-3 h-3 text-slate-500" />
-                </div>
-                <div className="text-xs text-slate-500">
-                  @程序员老唐AI
-                </div>
-              </div>
-            </a>
           </div>
 
           {/* 菜单底部 */}
-          <div className="px-4 py-2 border-t border-slate-700/50 bg-slate-800/30">
-            <div className="text-xs text-slate-500 text-center">
+          <div className="px-5 py-3 border-t border-stone-100 bg-stone-50/50">
+            <div className="text-xs text-stone-400 text-center">
               v0.1.0 · Made with AI ✨
             </div>
           </div>
@@ -170,4 +125,3 @@ const SettingsMenu: React.FC = () => {
 };
 
 export default SettingsMenu;
-

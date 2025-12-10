@@ -1,20 +1,15 @@
-"use client";
-
 import React, { useState, useEffect, useCallback } from 'react';
-import { Briefcase, HeartHandshake, Smile, MessageSquareQuote, Zap, History, ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
+import { Briefcase, HeartHandshake, Smile, MessageSquareQuote, Zap, History } from 'lucide-react';
 import InputSection from './components/InputSection';
 import TranslationCard from './components/TranslationCard';
 import HistoryPanel from './components/HistoryPanel';
 import { translateText } from './services/geminiService';
 import { AnalysisResult, HistoryRecord } from './types';
-import { hasApiKey } from '@/lib/apiKey';
-import ApiKeyButton from '@/components/ApiKeyButton';
 
 const HISTORY_STORAGE_KEY = 'internet-mouthpiece-history';
 const MAX_HISTORY_RECORDS = 50;
 
-export default function TruthTranslatorPage() {
+function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -22,6 +17,7 @@ export default function TruthTranslatorPage() {
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [history, setHistory] = useState<HistoryRecord[]>([]);
 
+  // 从 localStorage 加载历史记录
   useEffect(() => {
     try {
       const stored = localStorage.getItem(HISTORY_STORAGE_KEY);
@@ -34,6 +30,7 @@ export default function TruthTranslatorPage() {
     }
   }, []);
 
+  // 保存历史记录到 localStorage
   const saveHistory = useCallback((records: HistoryRecord[]) => {
     try {
       localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(records));
@@ -42,6 +39,7 @@ export default function TruthTranslatorPage() {
     }
   }, []);
 
+  // 添加新记录
   const addToHistory = useCallback((input: string, result: AnalysisResult) => {
     const newRecord: HistoryRecord = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
@@ -57,6 +55,7 @@ export default function TruthTranslatorPage() {
     });
   }, [saveHistory]);
 
+  // 删除单条记录
   const deleteRecord = useCallback((id: string) => {
     setHistory(prev => {
       const updated = prev.filter(record => record.id !== id);
@@ -65,11 +64,13 @@ export default function TruthTranslatorPage() {
     });
   }, [saveHistory]);
 
+  // 清空所有记录
   const clearAllHistory = useCallback(() => {
     setHistory([]);
     localStorage.removeItem(HISTORY_STORAGE_KEY);
   }, []);
 
+  // 选择历史记录
   const selectRecord = useCallback((record: HistoryRecord) => {
     setCurrentInput(record.input);
     setResult(record.result);
@@ -77,20 +78,15 @@ export default function TruthTranslatorPage() {
   }, []);
 
   const handleTranslate = async (text: string) => {
-    if (!hasApiKey()) {
-      setError('请先设置 API Key 才能使用互联网嘴替功能');
-      return;
-    }
-
     setIsLoading(true);
     setError(null);
     setResult(null);
     setCurrentInput(text);
 
     try {
-      const apiKey = localStorage.getItem('gemini_api_key') || '';
-      const data = await translateText(text, apiKey);
+      const data = await translateText(text);
       setResult(data);
+      // 保存到历史记录
       addToHistory(text, data);
     } catch (err) {
       setError("AI 似乎也在思考人生，请稍后再试...");
@@ -100,58 +96,43 @@ export default function TruthTranslatorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8] text-stone-900 selection:bg-rose-200 selection:text-rose-900 pb-20">
-      {/* Ambient Background */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-rose-100/40 to-pink-100/40 blur-3xl" />
-        <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-violet-100/30 to-amber-100/30 blur-3xl" />
+    <div className="min-h-screen bg-dark text-slate-200 selection:bg-secondary selection:text-white pb-20">
+      {/* Background Effects */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[100px] animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1s' }}></div>
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-8 pt-12 md:pt-20">
-        {/* Top Bar */}
-        <div className="flex items-center justify-between mb-12">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-stone-500 hover:text-stone-900 transition-colors group"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span className="text-sm font-medium">返回装备库</span>
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <ApiKeyButton />
-            <button
-              onClick={() => setIsHistoryOpen(true)}
-              className="group relative"
-              title="查看历史记录"
-            >
-              <div className="relative p-3 rounded-xl bg-white/80 border border-stone-200 hover:border-amber-300 hover:bg-white shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105">
-                <History className="w-5 h-5 text-stone-500 group-hover:text-amber-600 transition-colors" />
-                {history.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center shadow-lg">
-                    {history.length > 99 ? '99+' : history.length}
-                  </span>
-                )}
-              </div>
-            </button>
+        {/* History Button - Fixed Position */}
+        <button
+          onClick={() => setIsHistoryOpen(true)}
+          className="fixed top-4 right-4 md:top-6 md:right-6 z-30 group"
+          title="查看历史记录"
+        >
+          <div className="relative p-3 rounded-xl bg-slate-800/80 border border-slate-700 hover:border-amber-500/50 hover:bg-slate-800 shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105">
+            <History className="w-5 h-5 text-slate-400 group-hover:text-amber-400 transition-colors" />
+            {history.length > 0 && (
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center shadow-lg">
+                {history.length > 99 ? '99+' : history.length}
+              </span>
+            )}
           </div>
-        </div>
+        </button>
 
         {/* Header */}
         <header className="text-center mb-12 animate-fade-in-down">
-          <div className="inline-flex items-center justify-center gap-4 p-4 mb-6 bg-white/80 backdrop-blur-sm rounded-3xl border border-stone-200/60 shadow-xl">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-400 to-pink-500 flex items-center justify-center shadow-lg shadow-rose-200/50">
-              <MessageSquareQuote size={28} className="text-white" />
-            </div>
-            <h1 className="text-4xl md:text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-stone-900 via-stone-700 to-stone-900 tracking-tight">
+          <div className="inline-flex items-center justify-center p-3 mb-6 bg-slate-800/50 rounded-2xl border border-slate-700 shadow-xl backdrop-blur-sm">
+            <MessageSquareQuote size={40} className="text-secondary mr-3" />
+            <h1 className="text-4xl md:text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400 tracking-tight">
               互联网嘴替
             </h1>
           </div>
-          <p className="text-lg md:text-xl text-stone-600 max-w-2xl mx-auto font-medium leading-relaxed">
-            把你的<span className="text-rose-600 font-bold">大白话</span>瞬间变成
-            <span className="text-blue-600 font-bold mx-1">职场黑话</span>、
-            <span className="text-emerald-600 font-bold mx-1">顶级绿茶</span>和
-            <span className="text-purple-600 font-bold mx-1">阴阳怪气</span>
+          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto font-medium">
+            把你的<span className="text-secondary font-bold">大白话</span>瞬间变成
+            <span className="text-blue-400 font-bold mx-1">职场黑话</span>、
+            <span className="text-green-400 font-bold mx-1">顶级绿茶</span>和
+            <span className="text-purple-400 font-bold mx-1">阴阳怪气</span>。
           </p>
         </header>
 
@@ -160,27 +141,29 @@ export default function TruthTranslatorPage() {
 
         {/* Error Message */}
         {error && (
-          <div className="max-w-3xl mx-auto mb-8 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-center">
+          <div className="max-w-3xl mx-auto mb-8 p-4 bg-red-900/20 border border-red-500/50 rounded-xl text-red-200 text-center animate-shake">
             {error}
           </div>
         )}
 
+        {/* Loading State Skeleton (Optional visual flair if needed, but button shows loading) */}
+        
         {/* Results */}
         {result && (
           <div className="space-y-10">
             {/* Analysis Banner */}
             <div className="max-w-4xl mx-auto animate-zoom-in">
-              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 shadow-xl shadow-amber-100/50 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-5">
-                  <Zap size={120} className="text-amber-600" />
+              <div className="bg-gradient-to-r from-slate-800 to-slate-900 border border-slate-700 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                  <Zap size={120} />
                 </div>
-                <div className="shrink-0 bg-amber-100 p-4 rounded-2xl border border-amber-200 shadow-lg">
-                  <Zap className="text-amber-600 w-8 h-8 md:w-10 md:h-10" />
+                <div className="shrink-0 bg-yellow-500/10 p-4 rounded-full border border-yellow-500/20">
+                  <Zap className="text-yellow-400 w-8 h-8 md:w-10 md:h-10" />
                 </div>
                 <div className="text-center md:text-left z-10">
-                  <h3 className="text-amber-700 text-sm font-bold uppercase tracking-wider mb-2">情绪成分诊断</h3>
-                  <p className="text-xl md:text-2xl text-stone-900 font-bold leading-relaxed">
-                    &ldquo;{result.analysis}&rdquo;
+                  <h3 className="text-slate-400 text-sm font-bold uppercase tracking-wider mb-2">情绪成分诊断</h3>
+                  <p className="text-xl md:text-2xl text-white font-bold leading-relaxed">
+                    “{result.analysis}”
                   </p>
                 </div>
               </div>
@@ -192,31 +175,31 @@ export default function TruthTranslatorPage() {
                 title="职场防锅"
                 icon={<Briefcase size={24} />}
                 content={result.translations.professional}
-                colorClass="text-blue-600"
-                bgClass="bg-white/90 hover:bg-white"
+                colorClass="text-blue-400"
+                bgClass="bg-slate-800/80 hover:bg-slate-800"
                 delay={100}
               />
               <TranslationCard
                 title="顶级绿茶"
                 icon={<HeartHandshake size={24} />}
                 content={result.translations.high_eq}
-                colorClass="text-emerald-600"
-                bgClass="bg-white/90 hover:bg-white"
+                colorClass="text-green-400"
+                bgClass="bg-slate-800/80 hover:bg-slate-800"
                 delay={300}
               />
               <TranslationCard
                 title="阴阳大师"
                 icon={<Smile size={24} />}
                 content={result.translations.sarcastic}
-                colorClass="text-purple-600"
-                bgClass="bg-white/90 hover:bg-white"
+                colorClass="text-purple-400"
+                bgClass="bg-slate-800/80 hover:bg-slate-800"
                 delay={500}
               />
             </div>
           </div>
         )}
         
-        <footer className="mt-24 text-center text-stone-400 text-sm pb-8">
+        <footer className="mt-24 text-center text-slate-600 text-sm pb-8">
           <p>© {new Date().getFullYear()} 互联网嘴替实验室 · Powered by 程序员老唐AI</p>
         </footer>
       </div>
@@ -231,8 +214,8 @@ export default function TruthTranslatorPage() {
         onClearAll={clearAllHistory}
       />
 
-      {/* Animations */}
-      <style jsx>{`
+      {/* Global CSS for animations */}
+      <style>{`
         @keyframes fadeInDown {
           from { opacity: 0; transform: translateY(-20px); }
           to { opacity: 1; transform: translateY(0); }
@@ -252,3 +235,5 @@ export default function TruthTranslatorPage() {
     </div>
   );
 }
+
+export default App;

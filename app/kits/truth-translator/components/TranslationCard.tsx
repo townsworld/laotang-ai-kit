@@ -1,92 +1,135 @@
 "use client";
 
-import React, { useState } from 'react';
-import { TranslationMode } from '../types';
-import { Briefcase, HeartHandshake, Zap, Copy, Check, Share2 } from 'lucide-react';
+import React from 'react';
+import { Copy, Check } from 'lucide-react';
 
-interface Props {
-  mode: TranslationMode;
+interface TranslationCardProps {
+  title: string;
+  icon: React.ReactNode;
   content: string;
+  colorClass: string;
+  bgClass: string;
   delay: number;
-  onShare?: (mode: TranslationMode, content: string) => void;
 }
 
-const config = {
-  [TranslationMode.PROFESSIONAL]: {
-    title: '🛡️ 职场防锅',
-    icon: <Briefcase className="w-5 h-5" />,
-    colorClass: 'bg-blue-50 border-blue-200 text-blue-900',
-    iconClass: 'text-blue-600',
-    btnClass: 'hover:bg-blue-100 text-blue-600',
-    hoverClass: 'hover:shadow-blue-200/60 hover:border-blue-300',
-  },
-  [TranslationMode.HIGH_EQ]: {
-    title: '🍵 顶级绿茶',
-    icon: <HeartHandshake className="w-5 h-5" />,
-    colorClass: 'bg-pink-50 border-pink-200 text-pink-900',
-    iconClass: 'text-pink-600',
-    btnClass: 'hover:bg-pink-100 text-pink-600',
-    hoverClass: 'hover:shadow-pink-200/60 hover:border-pink-300',
-  },
-  [TranslationMode.SARCASTIC]: {
-    title: '🌚 阴阳大师',
-    icon: <Zap className="w-5 h-5" />,
-    colorClass: 'bg-violet-50/80 border-violet-300 text-slate-800 shadow-sm',
-    iconClass: 'text-violet-700',
-    btnClass: 'hover:bg-violet-200 text-violet-700',
-    hoverClass: 'hover:shadow-violet-200/60 hover:border-violet-400',
-  },
-};
+const TranslationCard: React.FC<TranslationCardProps> = ({ title, icon, content, colorClass, bgClass, delay }) => {
+  const [copied, setCopied] = React.useState(false);
 
-const TranslationCard: React.FC<Props> = ({ mode, content, delay, onShare }) => {
-  const [copied, setCopied] = useState(false);
-  const { title, icon, colorClass, iconClass, btnClass, hoverClass } = config[mode];
+  // 从 colorClass 提取颜色名称
+  const getColorName = (colorClass: string) => {
+    // colorClass 格式: "text-blue-600"
+    const match = colorClass.match(/text-(\w+)-(\d+)/);
+    if (match) {
+      return { color: match[1], shade: match[2] }; // { color: "blue", shade: "600" }
+    }
+    return { color: 'stone', shade: '600' };
+  };
+
+  const { color, shade } = getColorName(colorClass);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(content);
+    const cleanText = content.replace(/\*\*/g, '');
+    navigator.clipboard.writeText(cleanText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // 高亮背景色
+  const getHighlightBgClass = () => {
+    switch(color) {
+      case 'blue':
+        return 'bg-blue-50';
+      case 'emerald':
+        return 'bg-emerald-50';
+      case 'purple':
+        return 'bg-purple-50';
+      default:
+        return 'bg-stone-50';
+    }
+  };
+
+  const renderContent = (text: string) => {
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return (
+          <span 
+            key={index} 
+            className={`font-bold ${colorClass} ${getHighlightBgClass()} px-1.5 py-0.5 rounded mx-0.5`}
+          >
+            {part.slice(2, -2)}
+          </span>
+        );
+      }
+      return <span key={index}>{part}</span>;
+    });
+  };
+
+  // 根据颜色设置图标背景和边框
+  const getIconBgClass = () => {
+    switch(color) {
+      case 'blue':
+        return 'bg-blue-50 border-blue-100';
+      case 'emerald':
+        return 'bg-emerald-50 border-emerald-100';
+      case 'purple':
+        return 'bg-purple-50 border-purple-100';
+      default:
+        return 'bg-stone-50 border-stone-100';
+    }
+  };
+
+  // 装饰性渐变背景色
+  const getDecorationBgClass = () => {
+    switch(color) {
+      case 'blue':
+        return 'bg-blue-400';
+      case 'emerald':
+        return 'bg-emerald-400';
+      case 'purple':
+        return 'bg-purple-400';
+      default:
+        return 'bg-stone-400';
+    }
+  };
+
   return (
     <div 
-      className={`relative p-8 rounded-xl border-2 transition-all duration-300 ease-out transform hover:-translate-y-1 hover:shadow-xl ${colorClass} ${hoverClass} animate-slide-up flex flex-col`}
-      style={{ animationDelay: `${delay}ms` }}
+      className={`relative overflow-hidden rounded-2xl border border-stone-200/60 ${bgClass} backdrop-blur-sm p-6 shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-[1.02] animate-fade-in-up`}
+      style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}
     >
-      <div className="flex justify-between items-center mb-6">
-        <div className={`flex items-center gap-2 font-bold text-lg ${iconClass}`}>
-          {icon}
-          <h3>{title}</h3>
-        </div>
-        <div className="flex items-center gap-1">
-            {onShare && (
-              <button
-                onClick={() => onShare(mode, content)}
-                className={`p-2 rounded-full transition-colors ${btnClass}`}
-                title="生成分享图片"
-              >
-                <Share2 className="w-5 h-5" />
-              </button>
-            )}
-            <div className="relative">
-                {copied && (
-                    <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 w-max px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg animate-fade-in z-10">
-                        ✨ 文案已复制，快去发挥吧！
-                    </div>
-                )}
-                <button
-                  onClick={handleCopy}
-                  className={`p-2 rounded-full transition-colors ${btnClass}`}
-                  title="复制文案"
-                >
-                  {copied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-                </button>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className={`p-2.5 rounded-xl ${getIconBgClass()} border`}>
+            <div className={colorClass}>
+              {icon}
             </div>
+          </div>
+          <h3 className={`text-xl font-bold ${colorClass}`}>{title}</h3>
         </div>
+        <button
+          onClick={handleCopy}
+          className={`p-2.5 rounded-xl transition-all ${
+            copied 
+              ? 'bg-emerald-50 text-emerald-600' 
+              : 'text-stone-400 hover:text-stone-600 hover:bg-stone-100'
+          }`}
+          title={copied ? "已复制" : "复制内容"}
+        >
+          {copied ? (
+            <Check size={18} className="animate-bounce" />
+          ) : (
+            <Copy size={18} />
+          )}
+        </button>
       </div>
-      <p className="text-base leading-relaxed whitespace-pre-wrap font-medium opacity-90">
-        {content}
-      </p>
+      
+      <div className="text-stone-700 leading-relaxed text-base tracking-wide whitespace-pre-wrap">
+        {renderContent(content)}
+      </div>
+
+      {/* Decorative gradient */}
+      <div className={`absolute -bottom-8 -right-8 w-24 h-24 rounded-full blur-2xl opacity-10 ${getDecorationBgClass()}`}></div>
     </div>
   );
 };

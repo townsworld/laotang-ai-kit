@@ -18,6 +18,11 @@ const config = {
       },
     },
     extend: {
+      fontFamily: {
+        serif: ['"Playfair Display"', 'serif'],
+        display: ['"Cinzel"', 'serif'],
+        sans: ['"Inter"', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -52,6 +57,10 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Lexicon Artistry colors
+        cream: '#F9F8F4',
+        champagne: '#F0E6D2',
+        softblue: '#E0E5EB',
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -67,10 +76,30 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        // Lexicon Artistry keyframes
+        "fadeIn": {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        "fadeInUp": {
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "float": {
+          "0%": { transform: "translate(0px, 0px) scale(1)" },
+          "33%": { transform: "translate(30px, -50px) scale(1.1)" },
+          "66%": { transform: "translate(-20px, 20px) scale(0.9)" },
+          "100%": { transform: "translate(0px, 0px) scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        // Lexicon Artistry animations
+        "fade-in": "fadeIn 1.2s ease-out forwards",
+        "fade-in-up": "fadeInUp 1s ease-out forwards",
+        "float-slow": "float 20s ease-in-out infinite",
+        "float-slower": "float 25s ease-in-out infinite reverse",
       },
     },
   },

@@ -1,24 +1,25 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Briefcase, HeartHandshake, Smile, MessageSquareQuote, Zap, History, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, History, Sparkles } from 'lucide-react';
 import Link from 'next/link';
-import InputSection from './components/InputSection';
-import TranslationCard from './components/TranslationCard';
-import HistoryPanel from './components/HistoryPanel';
-import { translateText } from './services/geminiService';
-import { AnalysisResult, HistoryRecord } from './types';
+import { SceneSelector } from './components/SceneSelector';
+import { InputArea } from './components/InputArea';
+import { CopywritingCard } from './components/CopywritingCard';
+import { HistoryPanel } from './components/HistoryPanel';
+import { generateCopywriting } from './services/geminiService';
+import { Scene, CopywritingResult, HistoryRecord } from './types';
 import { hasApiKey } from '@/lib/apiKey';
 import ApiKeyButton from '@/components/ApiKeyButton';
 
-const HISTORY_STORAGE_KEY = 'internet-mouthpiece-history';
+const HISTORY_STORAGE_KEY = 'ai-copywriter-history';
 const MAX_HISTORY_RECORDS = 50;
 
-export default function TruthTranslatorPage() {
+export default function AICopywriterPage() {
+  const [selectedScene, setSelectedScene] = useState<Scene>('xiaohongshu_title');
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [result, setResult] = useState<CopywritingResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [currentInput, setCurrentInput] = useState('');
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [history, setHistory] = useState<HistoryRecord[]>([]);
 
@@ -42,14 +43,15 @@ export default function TruthTranslatorPage() {
     }
   }, []);
 
-  const addToHistory = useCallback((input: string, result: AnalysisResult) => {
+  const addToHistory = useCallback((input: string, scene: Scene, result: CopywritingResult) => {
     const newRecord: HistoryRecord = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+      scene,
       input,
       result,
       timestamp: Date.now(),
     };
-    
+
     setHistory(prev => {
       const updated = [newRecord, ...prev].slice(0, MAX_HISTORY_RECORDS);
       saveHistory(updated);
@@ -71,29 +73,28 @@ export default function TruthTranslatorPage() {
   }, []);
 
   const selectRecord = useCallback((record: HistoryRecord) => {
-    setCurrentInput(record.input);
+    setSelectedScene(record.scene);
     setResult(record.result);
     setError(null);
   }, []);
 
-  const handleTranslate = async (text: string) => {
+  const handleGenerate = async (input: string) => {
     if (!hasApiKey()) {
-      setError('请先设置 API Key 才能使用互联网嘴替功能');
+      setError('请先设置 API Key 才能使用 AI 文案生成功能');
       return;
     }
 
     setIsLoading(true);
     setError(null);
     setResult(null);
-    setCurrentInput(text);
 
     try {
       const apiKey = localStorage.getItem('gemini_api_key') || '';
-      const data = await translateText(text, apiKey);
+      const data = await generateCopywriting(selectedScene, input, apiKey);
       setResult(data);
-      addToHistory(text, data);
+      addToHistory(input, selectedScene, data);
     } catch (err) {
-      setError("AI 似乎也在思考人生，请稍后再试...");
+      setError('AI 创作失败，请稍后再试...');
     } finally {
       setIsLoading(false);
     }
@@ -123,12 +124,12 @@ export default function TruthTranslatorPage() {
             <button
               onClick={() => setIsHistoryOpen(true)}
               className="group relative"
-              title="查看历史记录"
+              title="查看创作历史"
             >
-              <div className="relative p-3 rounded-xl bg-white/80 border border-stone-200 hover:border-amber-300 hover:bg-white shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105">
-                <History className="w-5 h-5 text-stone-500 group-hover:text-amber-600 transition-colors" />
+              <div className="relative p-3 rounded-xl bg-white/80 border border-stone-200 hover:border-rose-300 hover:bg-white shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105">
+                <History className="w-5 h-5 text-stone-500 group-hover:text-rose-600 transition-colors" />
                 {history.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center shadow-lg">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-rose-500 to-pink-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center shadow-lg">
                     {history.length > 99 ? '99+' : history.length}
                   </span>
                 )}
@@ -141,22 +142,22 @@ export default function TruthTranslatorPage() {
         <header className="text-center mb-12 animate-fade-in-down">
           <div className="inline-flex items-center justify-center gap-4 p-4 mb-6 bg-white/80 backdrop-blur-sm rounded-3xl border border-stone-200/60 shadow-xl">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-400 to-pink-500 flex items-center justify-center shadow-lg shadow-rose-200/50">
-              <MessageSquareQuote size={28} className="text-white" />
+              <Sparkles size={28} className="text-white" />
             </div>
             <h1 className="text-4xl md:text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-stone-900 via-stone-700 to-stone-900 tracking-tight">
-              互联网嘴替
+              AI 文案大师
             </h1>
           </div>
           <p className="text-lg md:text-xl text-stone-600 max-w-2xl mx-auto font-medium leading-relaxed">
-            把你的<span className="text-rose-600 font-bold">大白话</span>瞬间变成
-            <span className="text-blue-600 font-bold mx-1">职场黑话</span>、
-            <span className="text-emerald-600 font-bold mx-1">顶级绿茶</span>和
-            <span className="text-purple-600 font-bold mx-1">阴阳怪气</span>
+            3 秒生成爆款文案，小红书、抖音、朋友圈全搞定
           </p>
         </header>
 
-        {/* Input */}
-        <InputSection onTranslate={handleTranslate} isLoading={isLoading} />
+        {/* Scene Selector */}
+        <SceneSelector selected={selectedScene} onSelect={setSelectedScene} />
+
+        {/* Input Area */}
+        <InputArea scene={selectedScene} onGenerate={handleGenerate} isLoading={isLoading} />
 
         {/* Error Message */}
         {error && (
@@ -166,58 +167,10 @@ export default function TruthTranslatorPage() {
         )}
 
         {/* Results */}
-        {result && (
-          <div className="space-y-10">
-            {/* Analysis Banner */}
-            <div className="max-w-4xl mx-auto animate-zoom-in">
-              <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/60 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center gap-6 shadow-xl shadow-amber-100/50 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-5">
-                  <Zap size={120} className="text-amber-600" />
-                </div>
-                <div className="shrink-0 bg-amber-100 p-4 rounded-2xl border border-amber-200 shadow-lg">
-                  <Zap className="text-amber-600 w-8 h-8 md:w-10 md:h-10" />
-                </div>
-                <div className="text-center md:text-left z-10">
-                  <h3 className="text-amber-700 text-sm font-bold uppercase tracking-wider mb-2">情绪成分诊断</h3>
-                  <p className="text-xl md:text-2xl text-stone-900 font-bold leading-relaxed">
-                    &ldquo;{result.analysis}&rdquo;
-                  </p>
-                </div>
-              </div>
-            </div>
+        {result && <CopywritingCard variants={result.variants} tips={result.tips} />}
 
-            {/* Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-              <TranslationCard
-                title="职场防锅"
-                icon={<Briefcase size={24} />}
-                content={result.translations.professional}
-                colorClass="text-blue-600"
-                bgClass="bg-white/90 hover:bg-white"
-                delay={100}
-              />
-              <TranslationCard
-                title="顶级绿茶"
-                icon={<HeartHandshake size={24} />}
-                content={result.translations.high_eq}
-                colorClass="text-emerald-600"
-                bgClass="bg-white/90 hover:bg-white"
-                delay={300}
-              />
-              <TranslationCard
-                title="阴阳大师"
-                icon={<Smile size={24} />}
-                content={result.translations.sarcastic}
-                colorClass="text-purple-600"
-                bgClass="bg-white/90 hover:bg-white"
-                delay={500}
-              />
-            </div>
-          </div>
-        )}
-        
         <footer className="mt-24 text-center text-stone-400 text-sm pb-8">
-          <p>© {new Date().getFullYear()} 互联网嘴替实验室 · Powered by 程序员老唐AI</p>
+          <p>© {new Date().getFullYear()} AI 文案大师 · Powered by 程序员老唐AI</p>
         </footer>
       </div>
 
@@ -234,21 +187,33 @@ export default function TruthTranslatorPage() {
       {/* Animations */}
       <style jsx>{`
         @keyframes fadeInDown {
-          from { opacity: 0; transform: translateY(-20px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
         @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
-        @keyframes zoomIn {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
+        .animate-fade-in-down {
+          animation: fadeInDown 0.8s ease-out;
         }
-        .animate-fade-in-down { animation: fadeInDown 0.8s ease-out; }
-        .animate-fade-in-up { animation: fadeInUp 0.8s ease-out; }
-        .animate-zoom-in { animation: zoomIn 0.5s ease-out; }
+        .animate-fade-in-up {
+          animation: fadeInUp 0.8s ease-out;
+        }
       `}</style>
     </div>
   );
 }
+

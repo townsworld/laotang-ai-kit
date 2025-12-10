@@ -21,4 +21,3 @@ export enum Mode {
   HighEQ = 'high_eq',
   Sarcastic = 'sarcastic',
 }
-
