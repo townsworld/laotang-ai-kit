@@ -1,0 +1,3 @@
+# Tarot card images will be placed here
+# Run: GEMINI_API_KEY=your_key npx ts-node scripts/generate-tarot-images.ts
+

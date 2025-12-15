@@ -30,25 +30,35 @@ export const StarField: React.FC<StarFieldProps> = ({
 }) => {
   const [mounted, setMounted] = useState(false);
   const [activeNode, setActiveNode] = useState<string | null>(null);
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const t = TRANSLATIONS[lang];
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const getNodeColor = (type?: string) => {
+  const getRelationColor = (type?: string) => {
     switch (type) {
-        case 'synonym': return 'bg-cyan-100 shadow-[0_0_20px_rgba(34,211,238,0.6)]'; // Cyan
-        case 'antonym': return 'bg-rose-100 shadow-[0_0_20px_rgba(251,113,133,0.6)]'; // Red/Rose
-        default: return 'bg-amber-100 shadow-[0_0_20px_rgba(251,191,36,0.6)]'; // Amber (Association)
-    }
-  };
-
-  const getNodeTextColor = (type?: string) => {
-    switch (type) {
-        case 'synonym': return 'text-cyan-100 group-hover:text-cyan-50';
-        case 'antonym': return 'text-rose-100 group-hover:text-rose-50';
-        default: return 'text-amber-100 group-hover:text-amber-50';
+        case 'synonym': return {
+          main: '#0891b2', // cyan-600
+          light: '#06b6d4', // cyan-500
+          pale: '#cffafe', // cyan-50
+        };
+        case 'antonym': return {
+          main: '#be123c', // rose-700
+          light: '#e11d48', // rose-600
+          pale: '#ffe4e6', // rose-50
+        };
+        case 'confusable': return {
+          main: '#7c3aed', // violet-600
+          light: '#8b5cf6', // violet-500
+          pale: '#ede9fe', // violet-50
+        };
+        default: return {
+          main: '#d97706', // amber-600
+          light: '#f59e0b', // amber-500
+          pale: '#fef3c7', // amber-50
+        };
     }
   };
 
@@ -56,55 +66,52 @@ export const StarField: React.FC<StarFieldProps> = ({
     switch (type) {
         case 'synonym': return t.starField.labels.synonym;
         case 'antonym': return t.starField.labels.antonym;
+        case 'confusable': return t.starField.labels.confusable;
         default: return t.starField.labels.association;
     }
   };
 
-  const getLabelStyle = (type?: string) => {
-      switch (type) {
-          case 'synonym': return 'text-cyan-300 border-cyan-500/50 bg-cyan-950/40';
-          case 'antonym': return 'text-rose-300 border-rose-500/50 bg-rose-950/40';
-          default: return 'text-amber-300 border-amber-500/50 bg-amber-950/40';
-      }
-  };
-
   const handleNodeClick = (e: React.MouseEvent, word: string) => {
     e.stopPropagation();
-    if (activeNode === word) {
-        setActiveNode(null); // Deselect
-    } else {
-        setActiveNode(word); // Select
-    }
+    setActiveNode(activeNode === word ? null : word);
+  };
+
+  // 动态布局 - 12个词需要4层轨道
+  const getPlanetDistance = (index: number) => {
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const baseRadius = isMobile ? 130 : 260;
+    const variation = (index % 4) * (isMobile ? 12 : 25);
+    return baseRadius + variation;
+  };
+
+  const getPlanetScale = (index: number, type?: string) => {
+    if (type === 'synonym') return 1.15;
+    if (type === 'antonym') return 1.1;
+    if (type === 'confusable') return 1.08;
+    return 1 + (index % 3) * 0.05;
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#050810] text-white flex items-center justify-center overflow-hidden animate-fade-in perspective-[1000px]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden animate-fade-in bg-cream">
       
-      {/* Dynamic Background Stars */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-50">
-         {[...Array(50)].map((_, i) => (
-            <div 
-                key={i}
-                className="absolute bg-white rounded-full opacity-0 animate-pulse"
-                style={{
-                    width: Math.random() * 3 + 'px',
-                    height: Math.random() * 3 + 'px',
-                    top: Math.random() * 100 + '%',
-                    left: Math.random() * 100 + '%',
-                    animationDuration: Math.random() * 3 + 2 + 's',
-                    animationDelay: Math.random() * 2 + 's',
-                    opacity: Math.random() * 0.7 + 0.1
-                }}
-            />
-         ))}
+      {/* 背景层 - 与主页面一致 */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+         {/* 噪点纹理 */}
+         <div className="absolute inset-0 bg-noise opacity-[0.03] mix-blend-multiply"></div>
+         
+         {/* 柔和的环境光 */}
+         <div className="absolute top-[-20%] left-[-10%] w-[1000px] h-[1000px] rounded-full bg-[#F5EFE6] mix-blend-multiply filter blur-[120px] opacity-40 animate-float-very-slow"></div>
+         <div className="absolute bottom-[-10%] right-[-10%] w-[800px] h-[800px] rounded-full bg-[#EBE5DE] mix-blend-multiply filter blur-[140px] opacity-30 animate-float-slower"></div>
       </div>
 
-      {/* Close Button */}
+      {/* 关闭按钮 */}
       <button 
         onClick={onClose}
-        className="absolute top-4 right-4 md:top-8 md:right-8 z-50 text-white/50 hover:text-white transition-colors duration-300 font-sans text-[10px] md:text-xs tracking-[0.2em] uppercase"
+        className="absolute top-6 right-6 md:top-10 md:right-10 z-50 px-5 py-2.5 bg-white/80 hover:bg-white backdrop-blur-sm border border-stone-200 hover:border-stone-400 rounded-full transition-all duration-300 shadow-sm hover:shadow-md group"
       >
-        {t.starField.exit}
+        <span className="text-xs tracking-widest uppercase text-stone-500 group-hover:text-stone-900 transition-colors font-medium">
+          {t.starField.exit}
+        </span>
       </button>
 
       {/* Radar Overlay */}
@@ -117,90 +124,181 @@ export const StarField: React.FC<StarFieldProps> = ({
           />
       )}
 
-      {/* 3D Scene Container */}
-      <div className={`relative w-full max-w-4xl h-[500px] md:h-[600px] flex items-center justify-center transform-style-3d transition-all duration-1000 ease-out ${mounted ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
+      {/* 主场景容器 */}
+      <div className={`relative w-full max-w-5xl h-[500px] md:h-[700px] flex items-center justify-center transition-all duration-1000 ${mounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
         
-        {/* Central Sun (Current Word) */}
-        <div className="absolute z-20 flex flex-col items-center justify-center text-center animate-float-slow group" onClick={() => setActiveNode(null)}>
-            <div className="absolute inset-0 bg-orange-500/20 blur-[40px] md:blur-[60px] rounded-full scale-150 animate-pulse-slow"></div>
-            <div className="absolute inset-0 bg-amber-200/10 blur-[20px] md:blur-[30px] rounded-full scale-110"></div>
-            <div className="relative w-32 h-32 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-amber-100/10 via-orange-900/40 to-black backdrop-blur-sm border border-white/10 shadow-[inset_0_0_40px_rgba(251,191,36,0.1)] flex items-center justify-center overflow-hidden">
-                <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-gradient-to-b from-white/10 to-transparent rotate-45 pointer-events-none"></div>
-                <h1 className="relative z-10 font-display text-2xl md:text-5xl text-transparent bg-clip-text bg-gradient-to-b from-amber-50 to-amber-200 tracking-wider capitalize drop-shadow-[0_0_15px_rgba(251,191,36,0.5)]">
+        {/* SVG 连接线 */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none z-5">
+          <defs>
+            {relatedConcepts.map((concept) => {
+              const colors = getRelationColor(concept.relationType);
+              return (
+                <linearGradient key={`grad-${concept.word}`} id={`gradient-${concept.word}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor={colors.main} stopOpacity="0" />
+                  <stop offset="50%" stopColor={colors.main} stopOpacity="0.3" />
+                  <stop offset="100%" stopColor={colors.main} stopOpacity="0" />
+                </linearGradient>
+              );
+            })}
+          </defs>
+          
+          {relatedConcepts.map((concept, index) => {
+            const angle = (index / relatedConcepts.length) * 2 * Math.PI;
+            const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+            const radius = getPlanetDistance(index);
+            const centerX = isMobile ? 250 : 500;
+            const centerY = isMobile ? 250 : 350;
+            const x = centerX + Math.cos(angle) * radius;
+            const y = centerY + Math.sin(angle) * radius;
+            
+            const isActive = activeNode === concept.word || hoveredNode === concept.word;
+            
+            return (
+              <path
+                key={`line-${concept.word}`}
+                d={`M ${centerX} ${centerY} L ${x} ${y}`}
+                stroke={`url(#gradient-${concept.word})`}
+                strokeWidth={isActive ? "2" : "1"}
+                strokeDasharray={isActive ? "none" : "4 6"}
+                className="transition-all duration-500"
+              />
+            );
+          })}
+        </svg>
+
+        {/* 轨道环 - 优雅虚线（4层支持12个词） */}
+        {[260, 285, 310, 335].map((size, idx) => (
+          <div 
+            key={`orbit-${idx}`}
+            className="absolute border border-stone-300/30 rounded-full pointer-events-none"
+            style={{
+              width: `${size}px`,
+              height: `${size}px`,
+              borderStyle: 'dashed',
+              borderWidth: '1px',
+              animation: `gentle-orbit ${75 + idx * 12}s linear infinite ${idx % 2 === 0 ? 'normal' : 'reverse'}`
+            }}
+          />
+        ))}
+
+        {/* 核心词 - 博物馆风格 */}
+        <div className="absolute z-20 flex flex-col items-center justify-center text-center group cursor-pointer" 
+             onClick={() => setActiveNode(null)}>
+            
+            {/* 主卡片 */}
+            <div className="relative bg-white/80 backdrop-blur-md border border-stone-200 rounded-3xl p-8 md:p-12 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.08)] group-hover:shadow-[0_30px_50px_-10px_rgba(0,0,0,0.12)] transition-all duration-700 group-hover:scale-105">
+                {/* 顶部装饰线 */}
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-stone-300/50 to-transparent"></div>
+                
+                {/* 核心文字 */}
+                <h1 className="font-serif text-4xl md:text-7xl text-stone-900 capitalize tracking-tight font-medium"
+                    style={{ fontFamily: "'Playfair Display', serif" }}>
                     {centerWord}
                 </h1>
+                
+                {/* 底部装饰 */}
+                <div className="mt-6 flex justify-center">
+                    <div className="h-px w-12 bg-stone-300/50"></div>
+                </div>
             </div>
-            {/* Removed Nexus Label */}
         </div>
 
-        {/* Orbit Rings */}
-        <div className="absolute w-[300px] h-[300px] md:w-[600px] md:h-[600px] border border-white/5 rounded-full rotate-x-60 animate-spin-slow pointer-events-none"></div>
-        <div className="absolute w-[220px] h-[220px] md:w-[450px] md:h-[450px] border border-white/5 rounded-full rotate-x-60 animate-spin-slower pointer-events-none"></div>
-
-        {/* Orbiting Concepts Container */}
-        <div className={`absolute inset-0 animate-spin-slow-reverse hover:pause-animation ${activeNode ? 'pause-animation' : ''}`}>
+        {/* 卫星层 */}
+        <div className="absolute inset-0">
            {relatedConcepts.map((concept, index) => {
                const angle = (index / relatedConcepts.length) * 2 * Math.PI;
                const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-               const radius = isMobile ? 150 : 300; 
-               const x = Math.cos(angle) * radius;
-               const y = Math.sin(angle) * radius;
+               const radius = getPlanetDistance(index);
+               const scale = getPlanetScale(index, concept.relationType);
+               const baseX = Math.cos(angle) * radius;
+               const baseY = Math.sin(angle) * radius;
                
                const isActive = activeNode === concept.word;
+               const isHovered = hoveredNode === concept.word;
+               const colors = getRelationColor(concept.relationType);
 
                return (
                    <div 
                         key={concept.word}
-                        className="absolute top-1/2 left-1/2 cursor-pointer z-30"
+                        className="absolute cursor-pointer"
                         style={{
-                            transform: `translate(${x}px, ${y}px) translate(-50%, -50%)`,
+                            top: '50%',
+                            left: '50%',
+                            transform: `translate(${baseX}px, ${baseY}px) translate(-50%, -50%) scale(${scale})`,
+                            transition: 'transform 0.5s ease-out',
+                            zIndex: isActive ? 100 : 30
                         }}
                         onClick={(e) => handleNodeClick(e, concept.word)}
+                        onMouseEnter={() => setHoveredNode(concept.word)}
+                        onMouseLeave={() => setHoveredNode(null)}
                    >
-                       {/* Planet Node */}
-                       <div className="relative flex flex-col items-center transition-all duration-300 transform animate-spin-slow group">
+                       <div className="relative flex flex-col items-center group/planet"
+                            style={{
+                              animation: `gentle-float ${5 + index * 0.4}s ease-in-out infinite`,
+                              animationDelay: `${index * 0.2}s`
+                            }}>
                            
-                           {/* Active Focus Menu (Popping out) */}
+                           {/* 激活菜单 */}
                            {isActive && (
-                               <div className="absolute bottom-full mb-6 flex flex-row gap-4 animate-fade-in-up z-50 whitespace-nowrap">
+                               <div className="absolute bottom-full mb-6 flex flex-row gap-3 animate-menu-slide-up whitespace-nowrap" style={{ zIndex: 100 }}>
                                    <button 
                                       onClick={(e) => { e.stopPropagation(); onSelectWord(concept.word); }}
-                                      className="px-5 py-2 min-w-[70px] bg-white/10 hover:bg-white/20 backdrop-blur-md rounded border border-white/20 text-[10px] uppercase tracking-wider text-white text-center transition-all"
+                                      className="px-5 py-2.5 bg-white hover:bg-stone-50 backdrop-blur-sm border border-stone-200 hover:border-stone-400 rounded-full text-sm text-stone-700 hover:text-stone-900 transition-all shadow-md hover:shadow-lg font-medium"
                                    >
                                        {t.starField.navigate}
                                    </button>
                                    <button 
                                       onClick={(e) => { e.stopPropagation(); onCompare(centerWord, concept.word); }}
-                                      className="px-5 py-2 min-w-[70px] bg-cyan-500/20 hover:bg-cyan-500/30 backdrop-blur-md rounded border border-cyan-500/40 text-[10px] uppercase tracking-wider text-cyan-200 text-center transition-all"
+                                      className="px-5 py-2.5 bg-stone-900 hover:bg-stone-800 border border-stone-900 rounded-full text-sm text-white transition-all shadow-lg hover:shadow-xl font-medium"
                                    >
                                        {t.starField.radar}
                                    </button>
                                </div>
                            )}
 
-                           {/* Relation Type Label (New) */}
-                           <span className={`mb-1.5 px-1.5 py-0.5 rounded text-[8px] font-sans font-bold tracking-widest uppercase border backdrop-blur-md transition-all duration-300 ${getLabelStyle(concept.relationType)} ${isActive ? 'opacity-100' : 'opacity-80 group-hover:opacity-100'}`}>
+                           {/* 关系类型标签 - 优雅胶囊 */}
+                           <div className={`mb-3 px-3 py-1 rounded-full backdrop-blur-sm text-[9px] uppercase tracking-widest font-semibold transition-all duration-300 border ${isActive ? 'scale-110' : ''}`}
+                                style={{
+                                  backgroundColor: `${colors.pale}cc`,
+                                  borderColor: colors.light,
+                                  color: colors.main
+                                }}>
                                 {getLabelText(concept.relationType)}
-                           </span>
-
-                           {/* Node Body */}
-                           <div className={`w-3 h-3 md:w-4 md:h-4 rounded-full mb-1 relative overflow-hidden transition-all duration-300 ${getNodeColor(concept.relationType)} ${isActive ? 'scale-150 ring-2 ring-white' : ''}`}>
                            </div>
-                           
-                           {/* Word Label */}
-                           <span className={`font-serif text-sm md:text-lg tracking-wide capitalize transition-colors drop-shadow-md whitespace-nowrap ${getNodeTextColor(concept.relationType)}`}>
-                                {concept.word}
-                           </span>
-                           
-                           {/* Tooltip (Only show if not active and on desktop) */}
-                           {!isActive && (
-                               <div className="absolute top-full pt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col items-center pointer-events-none hidden md:flex">
-                                   <div className="h-4 w-px bg-white/20 mb-1"></div>
-                                   <span className="text-xs text-white/70 font-sans font-light tracking-wider w-40 text-center bg-black/40 backdrop-blur-md p-2 rounded border border-white/10">
-                                        {concept.translation} · {concept.reason}
+
+                           {/* 词汇卡片 - 白色毛玻璃 */}
+                           <div className={`relative bg-white/90 backdrop-blur-md border border-stone-200 rounded-2xl p-4 md:p-5 shadow-lg transition-all duration-500 ${isActive ? 'scale-125 shadow-2xl border-stone-300' : isHovered ? 'scale-110 shadow-xl' : 'hover:scale-105 hover:shadow-xl'}`}>
+                               
+                               {/* 顶部装饰线 */}
+                               <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-stone-200 to-transparent"></div>
+                               
+                               <div className="flex flex-col items-center gap-2 min-w-[120px] md:min-w-[140px]">
+                                   {/* 主单词 */}
+                                   <span className="font-serif text-xl md:text-3xl text-stone-900 capitalize tracking-tight font-medium"
+                                         style={{ fontFamily: "'Playfair Display', serif" }}>
+                                        {concept.word}
                                    </span>
+                                   
+                                   {/* 词性 + 翻译 */}
+                                   <div className="text-xs md:text-sm text-stone-600 font-sans">
+                                        <span className="font-semibold text-stone-700">{concept.part_of_speech}</span>
+                                        <span className="mx-2 text-stone-400">·</span>
+                                        <span>{concept.translation}</span>
+                                   </div>
+                                   
+                                   {/* 关系说明 - 只在hover时显示 */}
+                                   {(isHovered || isActive) && (
+                                     <p className="text-[10px] md:text-xs text-stone-500 leading-relaxed mt-2 text-center max-w-[180px] font-light animate-fade-in">
+                                       {concept.reason}
+                                     </p>
+                                   )}
                                </div>
-                           )}
+                               
+                               {/* 底部装饰 */}
+                               {isActive && (
+                                 <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-px bg-gradient-to-r from-transparent via-stone-400 to-transparent"></div>
+                               )}
+                           </div>
                        </div>
                    </div>
                );
@@ -209,16 +307,45 @@ export const StarField: React.FC<StarFieldProps> = ({
       </div>
       
       <style jsx>{`
-        .transform-style-3d { transform-style: preserve-3d; }
-        .pause-animation { animation-play-state: paused; }
-        .animate-pulse-slow { animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes spin-slow-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
-        .animate-spin-slow { animation: spin-slow 80s linear infinite; }
-        .animate-spin-slow-reverse { animation: spin-slow-reverse 80s linear infinite; }
-        .animate-spin-slower { animation: spin-slow 100s linear infinite reverse; }
+        /* 柔和漂浮 */
+        @keyframes gentle-float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+        }
+        
+        /* 极慢漂浮 */
+        @keyframes float-very-slow {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(20px, -15px); }
+        }
+        .animate-float-very-slow { animation: float-very-slow 60s ease-in-out infinite; }
+        
+        @keyframes float-slower {
+          0%, 100% { transform: translate(0, 0); }
+          50% { transform: translate(-25px, 20px); }
+        }
+        .animate-float-slower { animation: float-slower 50s ease-in-out infinite; }
+        
+        /* 轨道旋转 */
+        @keyframes gentle-orbit {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        
+        /* 菜单滑入 */
+        @keyframes menu-slide-up {
+          0% { opacity: 0; transform: translateY(10px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-menu-slide-up { animation: menu-slide-up 0.3s ease-out; }
+        
+        /* 淡入 */
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        .animate-fade-in { animation: fade-in 0.6s ease-out; }
       `}</style>
     </div>
   );
 };
-

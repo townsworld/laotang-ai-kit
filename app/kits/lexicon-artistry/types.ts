@@ -8,9 +8,37 @@ export interface EtymologyStage {
 
 export interface RelatedConcept {
   word: string;
+  part_of_speech: string; // 词性: n./v./adj./adv. etc.
   translation: string;
   reason: string;
-  relationType: 'synonym' | 'antonym' | 'association';
+  relationType: 'synonym' | 'antonym' | 'association' | 'confusable';
+}
+
+// 3D Galaxy 数据结构
+export interface GalaxySatellite {
+  word: string;
+  type: 'synonym' | 'antonym' | 'confusable';
+  distance: number; // 轨道半径倍数 (1.0 = 基础半径)
+  nuance_score?: {
+    formal?: number;      // 0-10: 非正式 -> 正式
+    positive?: number;    // 0-10: 消极 -> 积极
+    active?: number;      // 0-10: 被动 -> 主动
+    common?: number;      // 0-10: 罕见 -> 常见
+    intensity?: number;   // 0-10: 温和 -> 强烈
+  };
+  part_of_speech?: string;
+  translation?: string;
+}
+
+export interface GalaxyData {
+  coreWord: {
+    word: string;
+    definition: string;
+    pronunciation: string;
+  };
+  satellites: GalaxySatellite[];
+  radar_dimensions: string[]; // AI 动态生成的雷达图维度
+  visual_prompt?: string; // 用于生成背景图
 }
 
 export interface Derivative {
@@ -31,6 +59,8 @@ export interface WordAnalysis {
   // Consolidated Data Fields
   related_concepts?: RelatedConcept[];
   derivatives?: Derivative[];
+  // 3D Galaxy 数据 (可选，如果启用 3D 模式)
+  galaxy_data?: GalaxyData;
 }
 
 export interface SavedWord extends WordAnalysis {

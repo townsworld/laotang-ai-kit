@@ -31,9 +31,16 @@ const demos = [
     id: "ai-copywriter",
     title: "AI 文案大师",
     description: "3秒生成爆款文案，小红书、抖音、朋友圈全搞定",
-    badge: "新品",
     tags: ["AI 驱动", "5种场景"],
     gradient: "from-pink-500/20 to-rose-500/20",
+  },
+  {
+    id: "tarot-divination",
+    title: "塔罗占卜",
+    description: "神秘的塔罗牌占卜，获得宇宙的启示和内在的智慧",
+    badge: "新品",
+    tags: ["AI 驱动", "多种牌阵"],
+    gradient: "from-purple-500/20 to-indigo-500/20",
   },
 ];
 

@@ -44,16 +44,19 @@ const analysisSchema = {
     },
     related_concepts: {
       type: "array",
-      description: "8 related concepts: Synonyms (esp confusing ones), Antonyms, and Associations.",
+      description: "12 UNIQUE related concepts: 3 Synonyms, 3 Antonyms, 3 Associations, 3 Confusable words. Each word must appear only once.",
+      minItems: 12,
+      maxItems: 12,
       items: {
         type: "object",
         properties: {
-          word: { type: "string" },
-          translation: { type: "string" },
-          reason: { type: "string" },
-          relationType: { type: "string", enum: ["synonym", "antonym", "association"] }
+          word: { type: "string", description: "The related word (must be unique)" },
+          part_of_speech: { type: "string", description: "Part of speech: n./v./adj./adv./etc." },
+          translation: { type: "string", description: "Chinese translation" },
+          reason: { type: "string", description: "Brief explanation of the relationship" },
+          relationType: { type: "string", enum: ["synonym", "antonym", "association", "confusable"] }
         },
-        required: ["word", "translation", "reason", "relationType"],
+        required: ["word", "part_of_speech", "translation", "reason", "relationType"],
       }
     },
     derivatives: {
@@ -68,34 +71,73 @@ const analysisSchema = {
         },
         required: ["part_of_speech", "word", "translation"],
       }
+    },
+    galaxy_data: {
+      type: "object",
+      description: "Optional 3D Word Galaxy data (simplified)",
+      properties: {
+        coreWord: {
+          type: "object",
+          properties: {
+            word: { type: "string" },
+            definition: { type: "string" },
+            pronunciation: { type: "string" }
+          }
+        },
+        satellites: {
+          type: "array",
+          description: "Related words for 3D visualization",
+          items: {
+            type: "object",
+            properties: {
+              word: { type: "string" },
+              type: { type: "string" },
+              distance: { type: "number" }
+            }
+          }
+        }
+      }
     }
   },
   required: ["word", "phonetic", "meaning_cn", "etymology_cn", "sentence_en", "sentence_cn", "nano_banana_image_prompt", "related_concepts", "derivatives"],
 };
 
-const comparisonSchema = {
+const getComparisonSchema = (lang: Language) => ({
   type: "object",
   properties: {
     wordA: { type: "string" },
     wordB: { type: "string" },
     dimensions: {
       type: "array",
+      description: "Exactly 4 comparison dimensions. Scores must use full 0-10 range, avoid clustering in middle.",
+      minItems: 4,
+      maxItems: 4,
       items: {
         type: "object",
         properties: {
-          label: { type: "string", description: "Name of the dimension." },
-          scoreA: { type: "number" },
-          scoreB: { type: "number" }
+          label: { 
+            type: "string", 
+            description: lang === 'cn' 
+              ? "Dimension name in Simplified Chinese ONLY (e.g. 正式程度, 情感强度). NO English." 
+              : "Dimension name in English ONLY (e.g. Formality, Emotional Intensity). NO Chinese."
+          },
+          scoreA: { type: "number", description: "Score for word A (0-10). Use full range, avoid 4-6." },
+          scoreB: { type: "number", description: "Score for word B (0-10). Use full range, avoid 4-6." }
         },
         required: ["label", "scoreA", "scoreB"]
       }
     },
-    insight: { type: "string" },
-    sentenceA: { type: "string" },
-    sentenceB: { type: "string" }
+    insight: { 
+      type: "string", 
+      description: lang === 'cn'
+        ? "Detailed analysis in Simplified Chinese (2-3 sentences, minimum 50 Chinese characters). Explain key differences and usage guidance."
+        : "Detailed analysis in English (2-3 sentences, minimum 50 words). Explain key differences and usage guidance."
+    },
+    sentenceA: { type: "string", description: "Example sentence for word A (ALWAYS in English)" },
+    sentenceB: { type: "string", description: "Example sentence for word B (ALWAYS in English)" }
   },
   required: ["wordA", "wordB", "dimensions", "insight", "sentenceA", "sentenceB"]
-};
+});
 
 export const analyzeWord = async (inputWord: string, style: ImageStyle = 'artistic'): Promise<WordAnalysis> => {
   const apiKey = getStoredApiKey();
@@ -119,10 +161,15 @@ export const analyzeWord = async (inputWord: string, style: ImageStyle = 'artist
     
     2. IMAGE PROMPT: Field 'nano_banana_image_prompt'. Use a specific, concrete visual metaphor. Embed the word '${inputWord}' artistically into the scene.
     
-    3. RELATED CONCEPTS (Starfield): Field 'related_concepts'. Generate 8 items.
-       - PRIORITY 1: Confusing words / Near-Synonyms (e.g. for 'lonely', include 'alone'). Tag 'synonym'.
-       - PRIORITY 2: Direct Antonyms. Tag 'antonym'.
-       - PRIORITY 3: Poetic associations. Tag 'association'.
+    3. RELATED CONCEPTS (Starfield): Field 'related_concepts'. Generate EXACTLY 12 UNIQUE items (no duplicates).
+       - Each item must include: word, part_of_speech (n./v./adj./adv./etc.), translation, reason, relationType
+       - Must include EXACTLY 3 of each type:
+         * 3 SYNONYMS: Near-synonyms with subtle differences. Tag 'synonym'.
+         * 3 ANTONYMS: Direct opposite meanings. Tag 'antonym'.
+         * 3 ASSOCIATIONS: Poetic/thematic connections. Tag 'association'.
+         * 3 CONFUSABLE: Words commonly confused with the target word (false friends, similar spelling, etc.). Tag 'confusable'.
+       - CRITICAL: Ensure all 12 words are different (no repeated words).
+       - For confusable words: Choose words that learners often mix up with the target word.
     
     4. DERIVATIVES: Field 'derivatives'. List top 5 morphological variations.
 
@@ -170,6 +217,167 @@ export const analyzeWord = async (inputWord: string, style: ImageStyle = 'artist
   }
 };
 
+// --- Fast Analysis for Galaxy (No Image Prompt, Timeline, etc.) ---
+const quickAnalysisSchema = {
+  type: "object",
+  properties: {
+    word: { type: "string" },
+    phonetic: { type: "string" },
+    meaning_cn: { type: "string" },
+    related_concepts: {
+      type: "array",
+      minItems: 11,
+      maxItems: 11,
+      items: {
+        type: "object",
+        properties: {
+          word: { type: "string" },
+          part_of_speech: { type: "string" },
+          translation: { type: "string" },
+          reason: { type: "string" },
+          relationType: { type: "string", enum: ["synonym", "antonym", "association", "confusable"] }
+        },
+        required: ["word", "part_of_speech", "translation", "reason", "relationType"],
+      }
+    }
+  },
+  required: ["word", "phonetic", "meaning_cn", "related_concepts"],
+};
+
+export const quickAnalyzeWord = async (inputWord: string): Promise<WordAnalysis> => {
+  const apiKey = getStoredApiKey();
+  if (!apiKey) throw new Error("请先设置 API Key");
+
+  const systemInstruction = `
+    You are a Linguistic Expert.
+    Goal: QUICKLY analyze the word "${inputWord}" for a lexical association board.
+    Output JSON fields: phonetic, meaning_cn (简要), and EXACTLY 11 related_concepts with counts:
+      - 2 associations (relationType="association")
+      - 3 synonyms (relationType="synonym")
+      - 3 antonyms (relationType="antonym")
+      - 3 confusables (relationType="confusable")
+    All items must be UNIQUE and tagged with the correct relationType. Use 简体中文 for translations/reasons.
+  `;
+
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemInstruction }] },
+          contents: [{ parts: [{ text: `Analyze: "${inputWord}"` }] }],
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: quickAnalysisSchema,
+            temperature: 0.6,
+          },
+        })
+      }
+    );
+
+    if (!response.ok) throw new Error('Quick analysis failed');
+    
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) throw new Error("No response");
+
+    const partialData = JSON.parse(text);
+    
+    // Fill in missing fields required by WordAnalysis type
+    return {
+      ...partialData,
+      etymology_cn: "",
+      sentence_en: "",
+      sentence_cn: "",
+      nano_banana_image_prompt: "",
+      derivatives: [],
+      etymology_timeline: [],
+    } as WordAnalysis;
+
+  } catch (error) {
+    console.error("Quick Analysis Error:", error);
+    throw error;
+  }
+};
+
+// 独立生成 Galaxy 数据（按需调用，不影响主解析）
+export const generateGalaxyData = async (wordAnalysis: WordAnalysis): Promise<WordAnalysis> => {
+  // 如果已有 galaxy_data，直接返回
+  if (wordAnalysis.galaxy_data) {
+    console.log('[Galaxy] Using existing galaxy_data');
+    return wordAnalysis;
+  }
+
+  console.log('[Galaxy] Generating galaxy data from related_concepts:', wordAnalysis.related_concepts?.length);
+
+  // 从 related_concepts 转换为简化的 galaxy satellites
+  const validConcepts = (wordAnalysis.related_concepts || [])
+    .filter(c => {
+      const isValid = c.relationType === 'synonym' || c.relationType === 'antonym' || c.relationType === 'confusable';
+      if (!isValid) {
+        console.log(`[Galaxy] Filtering out concept with type: ${c.relationType}`);
+      }
+      return isValid;
+    })
+    .slice(0, 10); // 最多10个
+
+  console.log('[Galaxy] Valid concepts after filter:', validConcepts.length);
+
+  if (validConcepts.length === 0) {
+    console.error('[Galaxy] No valid concepts found, cannot generate galaxy data');
+    throw new Error('No valid concepts for galaxy visualization');
+  }
+
+  const satellites = validConcepts.map((concept, index) => {
+      let distance = 1.0;
+      if (concept.relationType === 'synonym') distance = 0.8 + Math.random() * 0.5; // 0.8-1.3
+      else if (concept.relationType === 'antonym') distance = 1.8 + Math.random() * 0.7; // 1.8-2.5
+      else if (concept.relationType === 'confusable') distance = 1.2 + Math.random() * 0.6; // 1.2-1.8
+
+      const satellite = {
+        word: concept.word,
+        type: concept.relationType as 'synonym' | 'antonym' | 'confusable',
+        distance,
+        part_of_speech: concept.part_of_speech,
+        translation: concept.translation,
+        nuance_score: {
+          formal: Math.floor(Math.random() * 11),
+          positive: Math.floor(Math.random() * 11),
+          active: Math.floor(Math.random() * 11),
+          common: Math.floor(Math.random() * 11),
+          intensity: Math.floor(Math.random() * 11),
+        }
+      };
+
+      console.log(`[Galaxy] Satellite ${index}:`, satellite.word, satellite.type);
+      return satellite;
+    });
+
+  const galaxyData = {
+    coreWord: {
+      word: wordAnalysis.word,
+      definition: wordAnalysis.meaning_cn.split('\n')[0]?.replace(/^[a-z]\.\s*/, '') || wordAnalysis.word,
+      pronunciation: wordAnalysis.phonetic,
+    },
+    satellites,
+    radar_dimensions: ['Formal', 'Positive', 'Active', 'Common', 'Intensity'],
+    visual_prompt: `A glowing ethereal orb representing "${wordAnalysis.word}" floating in a soft violet nebula, dreamlike atmosphere, cinematic lighting`,
+  };
+
+  console.log('[Galaxy] Generated galaxy data:', {
+    coreWord: galaxyData.coreWord.word,
+    satellitesCount: galaxyData.satellites.length,
+    satelliteTypes: galaxyData.satellites.map(s => s.type)
+  });
+
+  return {
+    ...wordAnalysis,
+    galaxy_data: galaxyData
+  };
+};
+
 export const compareWords = async (wordA: string, wordB: string, lang: Language): Promise<ComparisonAnalysis> => {
   const apiKey = getStoredApiKey();
   if (!apiKey) {
@@ -179,11 +387,41 @@ export const compareWords = async (wordA: string, wordB: string, lang: Language)
   const targetLang = lang === 'cn' ? 'Simplified Chinese' : 'English';
 
   const systemInstruction = `
-    You are a Semantic Nuance Analyzer.
-    Goal: Compare two words by selecting the 4 most defining comparison dimensions.
-    Language Rules:
-    - Labels and Insight in ${targetLang}.
-    - Sentences ALWAYS in English.
+    You are a Semantic Nuance Analyzer specializing in deep vocabulary comparison.
+    
+    Goal: Compare "${wordA}" and "${wordB}" across exactly 4 meaningful dimensions.
+    
+    CRITICAL SCORING REQUIREMENTS:
+    1. Scores range from 0-10 (0 = lowest, 10 = highest on that dimension)
+    2. AVOID clustering scores around 5-6. Use the FULL range (0-10)
+    3. At least 2 dimensions should show SIGNIFICANT difference (4+ points apart)
+    4. Scores should reflect REAL semantic differences, not be artificially balanced
+    
+    DIMENSION SELECTION:
+    - Choose dimensions where the words genuinely differ
+    - Good examples: 正式程度, 情感强度, 具体性, 使用频率, 文学性, 口语化, 抽象度, 褒贬性
+    - Make dimensions SPECIFIC and MEANINGFUL
+    
+    INSIGHT REQUIREMENTS:
+    - Write 2-3 sentences (minimum 50 words in ${targetLang})
+    - Explain the KEY difference between the words
+    - Give PRACTICAL usage guidance (when to use which word)
+    - Be specific and insightful, not generic
+    
+    EXAMPLE SENTENCES:
+    - Must clearly demonstrate the nuance difference
+    - Use natural, sophisticated English
+    
+    STRICT LANGUAGE OUTPUT RULES:
+    ${lang === 'cn' ? `
+    - Dimension labels: MUST be in Simplified Chinese ONLY (e.g. "正式程度", "情感强度", NOT "Formality" or "正式程度 Formality")
+    - Insight: MUST be in Simplified Chinese ONLY
+    ` : `
+    - Dimension labels: MUST be in English ONLY (e.g. "Formality", "Emotional Intensity")
+    - Insight: MUST be in English ONLY
+    `}
+    - Example sentences: ALWAYS in English (regardless of interface language)
+    - DO NOT mix languages in dimension labels
   `;
 
   try {
@@ -203,7 +441,8 @@ export const compareWords = async (wordA: string, wordB: string, lang: Language)
           }],
           generationConfig: {
             responseMimeType: "application/json",
-            responseSchema: comparisonSchema,
+            responseSchema: getComparisonSchema(lang),
+            temperature: 0.7,
           },
         })
       }

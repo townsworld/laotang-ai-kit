@@ -2,7 +2,7 @@ export const TRANSLATIONS = {
   en: {
     nav: {
       analysis: "Analysis",
-      gallery: "Gallery"
+      gallery: "History"
     },
     search: {
       placeholder: "Enter a concept...",
@@ -39,10 +39,12 @@ export const TRANSLATIONS = {
       nexus: "Nexus",
       navigate: "Navigate",
       radar: "Radar",
+      analyzing: "Analyzing semantic dimensions...",
       labels: {
         synonym: "Synonym",
         antonym: "Antonym",
-        association: "Association"
+        association: "Association",
+        confusable: "Confusable"
       }
     },
     radar: {
@@ -57,17 +59,17 @@ export const TRANSLATIONS = {
       emptySub: "This word stands alone"
     },
     gallery: {
-      title: "Curated Collection",
-      count_one: "Masterpiece Archived",
-      count_many: "Masterpieces Archived",
-      empty_title: "Your gallery awaits its first exhibit.",
+      title: "Exploration History",
+      count_one: "Word Analyzed",
+      count_many: "Words Analyzed",
+      empty_title: "No words explored yet.",
       empty_action: "Start Analyzing"
     }
   },
   cn: {
     nav: {
       analysis: "词语解析",
-      gallery: "艺术画廊"
+      gallery: "历史记录"
     },
     search: {
       placeholder: "输入一个单词...",
@@ -95,7 +97,7 @@ export const TRANSLATIONS = {
       timeline: "词源时光轴",
       buttons: {
         derivations: "词汇派生",
-        explore: "星系探索",
+        explore: "词汇联想",
         save: "保存卡片"
       }
     },
@@ -104,10 +106,12 @@ export const TRANSLATIONS = {
       nexus: "核心",
       navigate: "解析",
       radar: "雷达",
+      analyzing: "正在分析语义维度...",
       labels: {
         synonym: "近义",
         antonym: "反义",
-        association: "联想"
+        association: "联想",
+        confusable: "易混"
       }
     },
     radar: {
@@ -122,10 +126,10 @@ export const TRANSLATIONS = {
       emptySub: "此词独树一帜"
     },
     gallery: {
-      title: "珍藏馆",
-      count_one: "件藏品",
-      count_many: "件藏品",
-      empty_title: "画廊尚无藏品",
+      title: "解析历史",
+      count_one: "个词汇",
+      count_many: "个词汇",
+      empty_title: "暂无解析历史",
       empty_action: "开始解析"
     }
   }
