@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { Search, Sparkles } from 'lucide-react';
 import { ImageStyle, Language } from '../types';
 import { TRANSLATIONS } from '../constants/translations';
 
@@ -50,12 +51,12 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSearch, onQuickExplo
             onChange={(e) => setValue(e.target.value)}
             placeholder={t.search.placeholder}
             disabled={isLoading}
-            className="flex-1 bg-transparent py-3 md:py-4 lg:py-5 pl-32 md:pl-40 pr-32 md:pr-40 font-serif italic text-base md:text-lg lg:text-xl text-stone-800 placeholder-stone-400/60 text-center focus:outline-none rounded-full caret-stone-600"
+            className="flex-1 bg-transparent py-3 md:py-4 lg:py-5 px-6 md:pl-40 md:pr-40 font-serif italic text-base md:text-lg lg:text-xl text-stone-800 placeholder-stone-400/60 text-center focus:outline-none rounded-full caret-stone-600"
             autoFocus
           />
           
-          <div className="absolute right-1.5 md:right-2 top-1.5 md:top-2 bottom-1.5 md:bottom-2 flex gap-1.5 md:gap-2">
-            {/* 词汇联想按钮 */}
+          <div className="hidden md:flex absolute right-1.5 md:right-2 top-1.5 md:top-2 bottom-1.5 md:bottom-2 gap-1.5 md:gap-2">
+            {/* 词汇联想按钮 - Desktop */}
             {onQuickExplore && (
               <button
                 type="button"
@@ -64,15 +65,16 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSearch, onQuickExplo
                 className="h-full px-3 md:px-4 lg:px-5 rounded-full bg-stone-700 text-white font-sans text-[9px] md:text-[10px] lg:text-xs tracking-[0.12em] md:tracking-[0.15em] uppercase font-medium hover:bg-stone-600 disabled:opacity-0 disabled:pointer-events-none transition-all duration-300 shadow-md hover:shadow-lg transform active:scale-95 flex items-center gap-2"
                 title="快速生成词汇联想"
               >
-                词汇联想
+                <Sparkles className="w-3 h-3 md:hidden" />
+                <span className="hidden md:inline">词汇联想</span>
               </button>
             )}
             
-            {/* 解析按钮 */}
+            {/* 解析按钮 - Desktop */}
             <button
                 type="submit"
                 disabled={isLoading || !value.trim()}
-                className="h-full px-4 md:px-5 lg:px-7 rounded-full bg-stone-900 text-stone-50 font-sans text-[9px] md:text-[10px] lg:text-xs tracking-[0.12em] md:tracking-[0.15em] uppercase font-medium hover:bg-stone-800 disabled:opacity-0 disabled:pointer-events-none transition-all duration-300 shadow-md hover:shadow-lg transform active:scale-95"
+                className="h-full px-3 md:px-5 lg:px-7 rounded-full bg-stone-900 text-stone-50 font-sans text-[9px] md:text-[10px] lg:text-xs tracking-[0.12em] md:tracking-[0.15em] uppercase font-medium hover:bg-stone-800 disabled:opacity-0 disabled:pointer-events-none transition-all duration-300 shadow-md hover:shadow-lg transform active:scale-95 flex items-center justify-center"
             >
                 {isLoading ? (
                   <span className="flex items-center gap-1.5">
@@ -81,10 +83,47 @@ export const SearchInput: React.FC<SearchInputProps> = ({ onSearch, onQuickExplo
                     <span className="w-1 h-1 bg-stone-50 rounded-full animate-bounce" style={{ animationDelay: '200ms' }}></span>
                   </span>
                 ) : (
-                  t.search.analyze
+                  <>
+                    <Search className="w-3 h-3 md:hidden" />
+                    <span className="hidden md:inline">{t.search.analyze}</span>
+                  </>
                 )}
             </button>
           </div>
+        </div>
+        
+        {/* Mobile Buttons - Below Input */}
+        <div className="flex md:hidden w-full gap-3 mt-4 justify-center">
+            {onQuickExplore && (
+              <button
+                type="button"
+                onClick={handleQuickExplore}
+                disabled={isLoading || !value.trim()}
+                className="flex-1 py-3 px-4 rounded-xl bg-stone-100/80 backdrop-blur-md border border-stone-200/50 text-stone-600 font-sans text-xs tracking-[0.12em] uppercase font-medium hover:bg-stone-200 disabled:opacity-50 disabled:pointer-events-none transition-all shadow-sm flex items-center justify-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                词汇联想
+              </button>
+            )}
+            
+            <button
+                type="submit"
+                disabled={isLoading || !value.trim()}
+                className="flex-1 py-3 px-4 rounded-xl bg-stone-900 text-stone-50 font-sans text-xs tracking-[0.12em] uppercase font-medium hover:bg-stone-800 disabled:opacity-50 disabled:pointer-events-none transition-all shadow-md flex items-center justify-center gap-2"
+            >
+                {isLoading ? (
+                  <span className="flex items-center gap-1.5">
+                    <span className="w-1 h-1 bg-stone-50 rounded-full animate-bounce"></span>
+                    <span className="w-1 h-1 bg-stone-50 rounded-full animate-bounce" style={{ animationDelay: '100ms' }}></span>
+                    <span className="w-1 h-1 bg-stone-50 rounded-full animate-bounce" style={{ animationDelay: '200ms' }}></span>
+                  </span>
+                ) : (
+                  <>
+                    <Search className="w-4 h-4" />
+                    {t.search.analyze}
+                  </>
+                )}
+            </button>
         </div>
       </form>
 

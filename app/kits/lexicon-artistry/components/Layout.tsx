@@ -45,19 +45,19 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
 
       {/* Content Layer */}
       <div className="relative z-10 w-full flex flex-col items-center flex-1">
-        <header className="w-full py-4 md:py-8 lg:py-12 px-4 md:px-6 lg:px-12 flex justify-between items-center max-w-7xl mx-auto z-50">
+        <header className="w-full py-4 md:py-8 lg:py-12 px-4 md:px-6 lg:px-12 flex justify-center md:justify-between items-center max-w-7xl mx-auto z-50 relative">
           <button 
             onClick={() => onNavigate?.('home')} 
-            className="text-left group relative ml-12 md:ml-16 lg:ml-0"
+            className="text-left group relative md:ml-16 lg:ml-0"
           >
-            <h1 className="font-display text-lg md:text-2xl lg:text-3xl xl:text-4xl tracking-[0.15em] md:tracking-[0.2em] text-stone-800 uppercase font-medium relative z-10">
+            <h1 className="font-display text-base md:text-2xl lg:text-3xl xl:text-4xl tracking-[0.15em] md:tracking-[0.2em] text-stone-800 uppercase font-medium relative z-10">
               Lexicon Artistry
             </h1>
             <div className="absolute -bottom-2 left-0 w-0 h-px bg-stone-800 transition-all duration-700 group-hover:w-full opacity-50"></div>
           </button>
 
           {/* Right Side: Nav & Lang & API Key */}
-          <div className="flex items-center gap-2 md:gap-4 lg:gap-8">
+          <div className="absolute right-2 md:static flex items-center gap-2 md:gap-4 lg:gap-8 scale-90 md:scale-100 origin-right">
             {onNavigate && (
                 <nav className="hidden md:flex gap-6 md:gap-10">
                     <button 
