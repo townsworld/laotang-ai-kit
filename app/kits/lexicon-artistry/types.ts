@@ -3,7 +3,8 @@ export interface EtymologyStage {
   language: string; // e.g. "Old French"
   word: string; // The form of the word at that time
   meaning: string; // The meaning at that time (in CN)
-  description: string; // Brief context (in CN)
+  description_cn: string; // Brief context (in CN)
+  description_en: string; // Brief context (in EN)
 }
 
 export interface RelatedConcept {

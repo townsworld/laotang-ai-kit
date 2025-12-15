@@ -80,7 +80,7 @@ export const EtymologyTimeline: React.FC<EtymologyTimelineProps> = ({ timeline, 
                                 <p className="text-sm text-stone-600 font-medium leading-relaxed">{stage.meaning}</p>
                                 <div className="pt-2 opacity-0 group-hover/node:opacity-100 transition-opacity duration-500 delay-100">
                                     <p className="text-[11px] text-stone-400 leading-relaxed font-light">
-                                        {stage.description}
+                                        {lang === 'cn' ? stage.description_cn : stage.description_en}
                                     </p>
                                 </div>
                             </div>
@@ -110,7 +110,7 @@ export const EtymologyTimeline: React.FC<EtymologyTimelineProps> = ({ timeline, 
                             </div>
                             <p className="text-sm text-stone-700 font-medium">{stage.meaning}</p>
                             <p className="text-xs text-stone-500 leading-relaxed mt-1 opacity-80">
-                                {stage.description}
+                                {lang === 'cn' ? stage.description_cn : stage.description_en}
                             </p>
                         </div>
                     </div>

@@ -10,10 +10,30 @@ const pendingRequests = new Map<string, Promise<any>>();
 
 // --- Style Instructions Mapping ---
 const STYLE_PROMPTS: Record<ImageStyle, string> = {
-  artistic: `Aesthetic: ELEGANT, MINIMALIST, ARTISTIC. Muted tones (Morandi), natural light, museum quality.`,
-  healing: `Aesthetic: HEALING, COZY, WARM. Soft watercolor textures, pastel colors, golden hour sunlight.`,
-  anime: `Aesthetic: ANIME STYLE, CEL-SHADED. Makoto Shinkai vibes, vibrant high-definition.`,
-  scifi: `Aesthetic: SCI-FI, FUTURISTIC. Neon accents, deep blues, holographic elements.`
+  artistic: `
+    Aesthetic: ELEGANT, MINIMALIST, ARTISTIC.
+    Visual: Muted tones (Morandi), natural light, museum quality.
+    Literary: Poetic, philosophical, sophisticated, evocative.
+    Associations: Poetic, thematic, literary connections.
+  `,
+  healing: `
+    Aesthetic: HEALING, COZY, WARM.
+    Visual: Soft watercolor textures, pastel colors, golden hour sunlight.
+    Literary: Gentle, soothing, positive, simple, comforting.
+    Associations: Positive, comforting, nature-oriented connections.
+  `,
+  anime: `
+    Aesthetic: ANIME STYLE, DRAMATIC.
+    Visual: Makoto Shinkai vibes, vibrant high-definition, cel-shaded.
+    Literary: Emotional, dramatic, slice-of-life, internal monologue.
+    Associations: Emotional, character-driven, narrative connections.
+  `,
+  scifi: `
+    Aesthetic: SCI-FI, FUTURISTIC, COLD.
+    Visual: Neon accents, deep blues, holographic elements, cyberpunk.
+    Literary: Technical, analytical, visionary, sharp, precise.
+    Associations: Technological, futuristic, scientific connections.
+  `
 };
 
 // --- JSON Schema for Analysis ---
@@ -37,9 +57,10 @@ const analysisSchema = {
           language: { type: "string" },
           word: { type: "string" },
           meaning: { type: "string" },
-          description: { type: "string" }
+          description_cn: { type: "string" },
+          description_en: { type: "string" }
         },
-        required: ["year", "language", "word", "meaning", "description"]
+        required: ["year", "language", "word", "meaning", "description_cn", "description_en"]
       }
     },
     related_concepts: {
@@ -152,28 +173,32 @@ export const analyzeWord = async (inputWord: string, style: ImageStyle = 'artist
     Goal: Analyze the input word and output a SINGLE JSON object containing definitions, visual prompts, etymology timeline, related concepts, and derivatives.
     
     Design Philosophy:
-    1. Output Language: Simplified Chinese (except target word and image prompt).
+    1. Output Language: Simplified Chinese (except target word, image prompt, and English fields).
     2. Aesthetic: ${selectedAesthetic}
-
+    
     CRITICAL REQUIREMENTS:
     
     1. DEFINITION: Field 'meaning_cn' must be direct translation categorized by Part of Speech (e.g., "n. 狗\\nv. 跟踪").
     
-    2. IMAGE PROMPT: Field 'nano_banana_image_prompt'. Use a specific, concrete visual metaphor. Embed the word '${inputWord}' artistically into the scene.
+    2. IMAGE PROMPT: Field 'nano_banana_image_prompt'. Use a specific, concrete visual metaphor based on the "Visual" aesthetic instructions. Embed the word '${inputWord}' artistically into the scene.
     
-    3. RELATED CONCEPTS (Starfield): Field 'related_concepts'. Generate EXACTLY 12 UNIQUE items (no duplicates).
-       - Each item must include: word, part_of_speech (n./v./adj./adv./etc.), translation, reason, relationType
+    3. EXAMPLE SENTENCE: Field 'sentence_en'. Write a sentence that strictly follows the "Literary" aesthetic instructions.
+       - The sentence tone, vocabulary, and imagery must MATCH the style (e.g., poetic for Artistic, comforting for Healing, dramatic for Anime, technical for Sci-Fi).
+    
+    4. RELATED CONCEPTS (Starfield): Field 'related_concepts'. Generate EXACTLY 12 UNIQUE items.
+       - The choice of 'associations' (3 items) must align with the "Associations" aesthetic instructions.
        - Must include EXACTLY 3 of each type:
-         * 3 SYNONYMS: Near-synonyms with subtle differences. Tag 'synonym'.
-         * 3 ANTONYMS: Direct opposite meanings. Tag 'antonym'.
-         * 3 ASSOCIATIONS: Poetic/thematic connections. Tag 'association'.
-         * 3 CONFUSABLE: Words commonly confused with the target word (false friends, similar spelling, etc.). Tag 'confusable'.
-       - CRITICAL: Ensure all 12 words are different (no repeated words).
-       - For confusable words: Choose words that learners often mix up with the target word.
+         * 3 SYNONYMS: Near-synonyms.
+         * 3 ANTONYMS: Direct opposites.
+         * 3 ASSOCIATIONS: Thematic connections matching the style.
+         * 3 CONFUSABLE: Words commonly confused.
+       - CRITICAL: Ensure all 12 words are different.
     
-    4. DERIVATIVES: Field 'derivatives'. List top 5 morphological variations.
+    5. DERIVATIVES: Field 'derivatives'. List top 5 morphological variations.
 
-    5. TIMELINE: Field 'etymology_timeline'. 3-5 historical stages.
+    6. TIMELINE: Field 'etymology_timeline'. 3-5 historical stages.
+       - 'description_cn': Context in Simplified Chinese.
+       - 'description_en': Context in English.
   `;
 
   try {

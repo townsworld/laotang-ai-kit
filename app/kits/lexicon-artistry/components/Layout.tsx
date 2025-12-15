@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../constants/translations';
 import ApiKeyButton from '@/components/ApiKeyButton';
@@ -32,32 +31,21 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
          <div className="absolute bottom-[-10%] right-[-10%] w-[800px] h-[800px] rounded-full bg-[#EBE5DE] mix-blend-multiply filter blur-[140px] opacity-50 animate-float-slower"></div>
       </div>
 
-      {/* Back to Home Button - Icon Only */}
-      <div className="absolute top-4 left-4 md:top-6 md:left-6 z-30">
-        <Link
-          href="/"
-          className="inline-flex items-center justify-center w-9 h-9 md:w-10 md:h-10 bg-white/60 hover:bg-white/90 backdrop-blur-sm border border-stone-200/60 hover:border-stone-300 rounded-full text-stone-500 hover:text-stone-800 transition-all shadow-sm hover:shadow-md group"
-          title="返回装备库"
-        >
-          <ArrowLeft className="w-4 h-4 md:w-4.5 md:h-4.5 group-hover:-translate-x-0.5 transition-transform" />
-        </Link>
-      </div>
-
       {/* Content Layer */}
       <div className="relative z-10 w-full flex flex-col items-center flex-1">
-        <header className="w-full py-4 md:py-8 lg:py-12 px-4 md:px-6 lg:px-12 flex justify-center md:justify-between items-center max-w-7xl mx-auto z-50 relative">
-          <button 
-            onClick={() => onNavigate?.('home')} 
-            className="text-left group relative md:ml-16 lg:ml-0"
-          >
-            <h1 className="font-display text-base md:text-2xl lg:text-3xl xl:text-4xl tracking-[0.15em] md:tracking-[0.2em] text-stone-800 uppercase font-medium relative z-10">
+        <header className="w-full py-4 md:py-8 lg:py-12 px-4 md:px-6 lg:px-12 flex justify-between items-center max-w-7xl mx-auto z-50 relative">
+          <div className="text-left group relative">
+            <h1 
+              onClick={() => onNavigate?.('home')} 
+              className="font-display text-base md:text-2xl lg:text-3xl xl:text-4xl tracking-[0.15em] md:tracking-[0.2em] text-stone-800 uppercase font-medium relative z-10 cursor-pointer"
+            >
               Lexicon Artistry
             </h1>
             <div className="absolute -bottom-2 left-0 w-0 h-px bg-stone-800 transition-all duration-700 group-hover:w-full opacity-50"></div>
-          </button>
+          </div>
 
           {/* Right Side: Nav & Lang & API Key */}
-          <div className="absolute right-2 md:static flex items-center gap-2 md:gap-4 lg:gap-8 scale-90 md:scale-100 origin-right">
+          <div className="flex items-center gap-2 md:gap-4 lg:gap-8 scale-90 md:scale-100 origin-right">
             {onNavigate && (
                 <nav className="hidden md:flex gap-6 md:gap-10">
                     <button 
@@ -116,8 +104,19 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentView, onNavigat
           {children}
         </main>
         
-        <footer className="w-full py-6 md:py-8 lg:py-12 text-center text-stone-400/80 text-[9px] md:text-[10px] tracking-[0.3em] uppercase mt-auto">
-          Powered by 程序员老唐AI
+        <footer className="w-full py-8 md:py-12 flex flex-col items-center gap-4 mt-auto z-10">
+          <Link 
+            href="/" 
+            className="group flex items-center gap-2 text-[10px] md:text-xs tracking-[0.2em] uppercase text-stone-400 hover:text-stone-800 transition-colors duration-300"
+          >
+            <span className="w-6 md:w-8 h-px bg-stone-300 group-hover:bg-stone-800 transition-colors"></span>
+            <span>{lang === 'cn' ? '返回首页' : 'Back to Home'}</span>
+            <span className="w-6 md:w-8 h-px bg-stone-300 group-hover:bg-stone-800 transition-colors"></span>
+          </Link>
+          
+          <p className="text-[9px] md:text-[10px] tracking-[0.3em] uppercase text-stone-300/80">
+            Powered by 程序员老唐AI
+          </p>
         </footer>
       </div>
     </div>

@@ -123,11 +123,20 @@ export const WordCard: React.FC<WordCardProps> = ({ data, imageUrl, loadingStep,
     setIsGeneratingShare(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 100));
+      if (!shareRef.current) return;
+      
       const canvas = await html2canvas(shareRef.current, {
-        scale: 2,
+        scale: 3, // Increased scale for better quality
         backgroundColor: '#F9F8F4',
         logging: false,
         useCORS: true,
+        allowTaint: true,
+        height: shareRef.current.offsetHeight, // Explicitly set height to full content
+        windowHeight: shareRef.current.offsetHeight + 100, // Ensure window context is large enough
+        onclone: (clonedDoc) => {
+           // Optional: Ensure fonts or images are fully loaded in the clone if needed
+           // For now, simple clone usually works
+        }
       });
       const image = canvas.toDataURL("image/png");
       const link = document.createElement("a");
@@ -369,7 +378,7 @@ export const WordCard: React.FC<WordCardProps> = ({ data, imageUrl, loadingStep,
           ></div>
 
           {/* Modal Content */}
-          <div className="relative bg-cream w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl">
+          <div className="relative bg-cream w-full max-w-[95vw] md:max-w-6xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl">
             {/* Close Button */}
             <button
               onClick={() => setShowShareModal(false)}
@@ -382,19 +391,19 @@ export const WordCard: React.FC<WordCardProps> = ({ data, imageUrl, loadingStep,
             </button>
 
             {/* Preview Area */}
-            <div className="p-6 md:p-8 pt-0">
-              <h3 className="text-center text-xl md:text-2xl font-serif text-stone-800 mb-6">
+            <div className="p-6 md:p-10 pt-0 flex flex-col items-center">
+              <h3 className="text-center text-xl md:text-2xl font-serif text-stone-800 mb-8">
                 {lang === 'cn' ? '分享预览' : 'Share Preview'}
               </h3>
 
-              {/* Share Card Preview */}
-              <div className="w-full bg-[#F9F8F4] p-6 md:p-8 rounded-xl shadow-lg border border-stone-200">
+              {/* Share Card Preview - Removed outer container styles to eliminate the "frame" effect */}
+              <div className="w-full max-w-[800px] bg-[#F9F8F4] p-8 md:p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)]">
                 <div className="absolute inset-0 bg-noise opacity-[0.03] mix-blend-multiply pointer-events-none"></div>
                 <ShareCardContent data={data} imageUrl={imageUrl} lang={lang} />
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-6 flex justify-center gap-3">
+              <div className="mt-8 flex justify-center gap-3 w-full">
                 <button
                   onClick={() => setShowShareModal(false)}
                   className="px-6 py-2.5 rounded-full bg-white hover:bg-stone-50 border border-stone-200 hover:border-stone-300 text-stone-600 hover:text-stone-800 transition-all shadow-sm text-sm font-medium"
@@ -428,14 +437,16 @@ export const WordCard: React.FC<WordCardProps> = ({ data, imageUrl, loadingStep,
         </div>
       )}
 
-      {/* HIDDEN "SHARE CARD" LAYOUT - For html2canvas - 3:4 ratio */}
-      <div 
-        ref={shareRef}
-        className="fixed top-0 left-[-9999px] w-[900px] h-[1200px] bg-[#F9F8F4] p-12 flex flex-col items-center justify-center text-stone-800 overflow-hidden"
-        style={{ fontFeatureSettings: '"kern" 1' }}
-      >
-        <div className="absolute inset-0 bg-noise opacity-[0.03] mix-blend-multiply pointer-events-none"></div>
-        <ShareCardContent data={data} imageUrl={imageUrl} lang={lang} />
+      {/* HIDDEN "SHARE CARD" LAYOUT - For html2canvas */}
+      <div className="fixed top-0 left-[-9999px] overflow-hidden">
+        <div 
+            ref={shareRef}
+            className="w-[900px] min-h-[1200px] h-auto bg-[#F9F8F4] p-16 flex flex-col items-center text-stone-800 relative"
+            style={{ fontFeatureSettings: '"kern" 1' }}
+        >
+            <div className="absolute inset-0 bg-noise opacity-[0.03] mix-blend-multiply pointer-events-none h-full"></div>
+            <ShareCardContent data={data} imageUrl={imageUrl} lang={lang} />
+        </div>
       </div>
     </div>
   );
