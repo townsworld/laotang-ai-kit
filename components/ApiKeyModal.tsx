@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Key, X, Eye, EyeOff, Lock } from 'lucide-react';
 
 interface Props {
@@ -29,7 +30,13 @@ const ApiKeyModal: React.FC<Props> = ({
     setApiKey(initialKey || '');
   }, [initialKey, isOpen]);
 
-  if (!isOpen) return null;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
 
   const handleSave = () => {
     if (apiKey.trim()) {
@@ -47,8 +54,8 @@ const ApiKeyModal: React.FC<Props> = ({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-fade-in">
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-md animate-fade-in">
       <div className="relative bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-stone-200/60">
         {/* Decorative Top Border */}
         <div className="h-1 bg-gradient-to-r from-amber-400 via-rose-400 to-violet-400" />
@@ -138,6 +145,9 @@ const ApiKeyModal: React.FC<Props> = ({
       </div>
     </div>
   );
+
+  // 使用 Portal 渲染到 body，避免被父容器的 overflow:hidden 裁剪
+  return createPortal(modalContent, document.body);
 };
 
 export default ApiKeyModal;
