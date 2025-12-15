@@ -93,8 +93,8 @@ const RadarChart2D: React.FC<{ data: ComparisonAnalysis }> = ({ data }) => {
         const { x, y, angle } = getCoordinates(13.5, i); // Position slightly outside
         
         // Adjust text anchor based on angle to prevent overlap
-        let textAnchor = "middle";
-        let dominantBaseline = "middle";
+        let textAnchor: "start" | "middle" | "end" = "middle";
+        let dominantBaseline: "auto" | "middle" | "hanging" = "middle";
         
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
